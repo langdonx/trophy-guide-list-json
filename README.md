@@ -49,6 +49,7 @@ Attributes are used to reduce size of JSON. They are bitwise flags that can be u
 ```
 declare const IS_TROPHY_GUIDE = 1;
 declare const IS_DLC = 2;
+declare const PLATFORM_PC = 512;
 declare const PLATFORM_PS3 = 4;
 declare const PLATFORM_PS4 = 8;
 declare const PLATFORM_PS5 = 16;
