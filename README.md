@@ -57,6 +57,7 @@ declare const PLATFORM_VITA = 32;
 declare const PLATFORM_VR = 64;
 declare const HAS_BUGGY_TROPHIES = 128;
 declare const HAS_ONLINE_TROPHIES = 256;
+declare const HAS_MISSABLE_TROPHIES = 1024;
 ```
 
 They can be used as follows:
