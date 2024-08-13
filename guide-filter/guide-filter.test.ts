@@ -1,385 +1,350 @@
 import { filter } from './guide-filter';
 import type { Guide } from '../types/guides';
+import {
+    SOURCE_PSNP,
+    SOURCE_KNOEF,
+    SOURCE_POWERPYX,
+    IS_TROPHY_GUIDE,
+    IS_DLC,
+    PLATFORM_PC,
+    PLATFORM_PS3,
+    PLATFORM_PS4,
+    PLATFORM_PS5,
+    PLATFORM_VITA,
+    PLATFORM_VR,
+    HAS_BUGGY_TROPHIES,
+    HAS_ONLINE_TROPHIES,
+    HAS_MISSABLE_TROPHIES,
+} from '../types/attributes';
 
-let guideData = getSampleGuideData();
+const sampleGuideDataForTextAndAuthor = getSampleGuideDataForTextAndAuthor();
+const sampleGuideDataForDlcAndPlatinum = getSampleGuideDataForDlcAndPlatinum();
+const sampleGuideDataForSource = getSampleGuideDataForSource();
+const sampleGuideDataForType = getSampleGuideDataForTypeAndAttributes();
+const sampleGuideDataForOrder = getSampleGuideDataForOrder();
+const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAttributes();
 
-// TODO difficulty
-// TODO hours
-// TODO playthroughs
-// TODO order / order-reverse
-// TODO buggy, online, missable
-// TODO a way to search for solo authors (show me guides I wrote alone)
-// TODO you should be able to use leftOverTerms to find authors, but not sure if that's a good idea (langdon finds all langdon's guides without needing author:langdon, but that might be annoying when authors have names like "Steamworld")
+// TODO order by multiple fields, e.g. hardest game that is the shortest -- order:-difficulty,hours
+
+// TODO platinum rate, completion rate (when data is available)
+
+// TODO exclusive searches -- use + to say "all these must be there"
+//      - platform:+psv (no need to -ps3,-ps4)
+//      - author:+langdon (guides I solo authored)
+
+function genericTest(_: string, search: string, data: Record<string, Guide>, expectedTitles: string[]) {
+    const result = filter(data, search);
+    expect(result.length).toBe(expectedTitles.length);
+    expect(result.map(r => r.title)).toStrictEqual(expectedTitles);
+};
 
 (async () => {
     // raw text
-    const basicScenarios = [
-        ['Full Match', 'PSNProfiles: Writing a Guide', 1, ['PSNProfiles: Writing a Guide']],
-        ['Partial Match', 'Rules & Disputes', 1, ['PSNProfiles: Leaderboard Rules & Disputes']],
+    const basicSearchScenarios = [
+        ['Full Match', 'PSNProfiles: Writing a Guide', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide']],
+        ['Partial Match', 'Rules & Disputes', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Leaderboard Rules & Disputes']],
     ];
-    describe('Basic Search', () => {
-        test.each(basicScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const result = filter(guideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('Basic Search', () => test.each(basicSearchScenarios)('%s - `%s`', genericTest));
 
     // author:
     const authorScenarios = [
-        ['Full Match', 'author:Michael2399', 1, ['Pato Box Trophy Guide']],
-        ['Partial Match', 'author:ichael239', 1, ['Pato Box Trophy Guide']],
-        ['Multiple', 'author:langdon,Michael2399', 1, ['Pato Box Trophy Guide']],
-        ['Multiple (Out Of Order)', 'author:Michael2399,langdon', 1, ['Pato Box Trophy Guide']],
-        ['Multiple (Partial)', 'author:ichael239,angdo', 1, ['Pato Box Trophy Guide']],
-        ['Multiple (Mismatched)', 'author:HealedFiend13,Michael2399', 0, []],
+        ['Full Match', 'author:Michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Partial Match', 'author:ichael239', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple', 'author:langdon,Michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple (Out Of Order)', 'author:Michael2399,langdon', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple (Partial)', 'author:ichael239,angdo', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple (Mismatched)', 'author:HealedFiend13,Michael2399', sampleGuideDataForTextAndAuthor, []],
     ];
-    describe('Author Search', () => {
-        test.each(authorScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const result = filter(guideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('Author Search', () => test.each(authorScenarios)('%s - `%s`', genericTest));
+
+    // buggy:
+    const buggyScenarios = [
+        ['Yes', 'buggy:yes', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 4', 'Rating 5', 'Rating 7']],
+        ['No', 'buggy:no', sampleGuideDataForRatingsAndAttributes, ['Rating 2', 'Rating 3', 'Rating 6', 'Rating 8', 'Rating 9', 'Rating 10']],
+        ['Garbage Text (Ignored)', 'buggy:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+    ];
+    describe('Buggy Search', () => test.each(buggyScenarios)('%s - `%s`', genericTest));
+
+    // difficulty:
+    const difficultyScenarios = [
+        ['Equals', 'difficulty:3', sampleGuideDataForRatingsAndAttributes, ['Rating 3']],
+        ['Greater Than', 'difficulty:>8', sampleGuideDataForRatingsAndAttributes, ['Rating 9', 'Rating 10']],
+        ['Less Than', 'difficulty:<3', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2']],
+        // TODO garbage
+    ];
+    describe('Difficulty Search', () => test.each(difficultyScenarios)('%s - `%s`', genericTest));
 
     // dlc:
     const dlcScenarios = [
-        ['Yes', 'dlc:yes', 1, ['Final Fantasy XIV - Heavensward DLC Trophy Guide']],
-        ['No', 'dlc:no', 1, ['Final Fantasy XIV Trophy Guide']],
-        ['Garbage Text (Ignored)', 'dlc:garbage', 2, ['Final Fantasy XIV Trophy Guide', 'Final Fantasy XIV - Heavensward DLC Trophy Guide']],
+        ['Yes', 'dlc:yes', sampleGuideDataForDlcAndPlatinum, ['I Am A DLC Guide']],
+        ['No', 'dlc:no', sampleGuideDataForDlcAndPlatinum, ['I Am A Platinum Trophy Guide', 'I Am A Trophy Guide Without A Platinum']],
+        ['Garbage Text (Ignored)', 'dlc:garbage', sampleGuideDataForDlcAndPlatinum, ['I Am A Platinum Trophy Guide', 'I Am A Trophy Guide Without A Platinum', 'I Am A DLC Guide']],
     ];
-    describe('DLC Search', () => {
-        test.each(dlcScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const isolatedGuideData = getSampleGuideDataForDlcAndPlatinumSearch();
-            const result = filter(isolatedGuideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('DLC Search', () => test.each(dlcScenarios)('%s - `%s`', genericTest));
+
+    // hours:
+    const hoursScenarios = [
+        ['Equals', 'hours:1', sampleGuideDataForRatingsAndAttributes, ['Rating 1']],
+        ['Greater Than', 'hours:>9', sampleGuideDataForRatingsAndAttributes, ['Rating 10']],
+        ['Less Than', 'hours:<2', sampleGuideDataForRatingsAndAttributes, ['Rating 1']],
+        // TODO garbage
+    ];
+    describe('Hours Search', () => test.each(hoursScenarios)('%s - `%s`', genericTest));
+
+    // missable:
+    const missableScenarios = [
+        ['Yes', 'missable:yes', sampleGuideDataForRatingsAndAttributes, ['Rating 3', 'Rating 5', 'Rating 6', 'Rating 7']],
+        ['No', 'missable:no', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 4', 'Rating 8', 'Rating 9', 'Rating 10']],
+        ['Garbage Text (Ignored)', 'missable:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+    ];
+    describe('Missable Search', () => test.each(missableScenarios)('%s - `%s`', genericTest));
+
+    // online:
+    const onlineScenarios = [
+        ['Yes', 'online:yes', sampleGuideDataForRatingsAndAttributes, ['Rating 2', 'Rating 4', 'Rating 6', 'Rating 7']],
+        ['No', 'online:no', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 3', 'Rating 5', 'Rating 8', 'Rating 9', 'Rating 10']],
+        ['Garbage Text (Ignored)', 'online:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+    ];
+    describe('Online Search', () => test.each(onlineScenarios)('%s - `%s`', genericTest));
+
+    // order:
+    const ascending = ['A Guide', 'D Guide', 'Y Guide', 'Z Guide'];
+    const descending = ['Z Guide', 'Y Guide', 'D Guide', 'A Guide'];
+    const ratingMissing = ['Y Guide', 'D Guide', 'A Guide', 'Z Guide']; // no rating, so Z stays at the end
+    const orderScenarios = [
+        ['Title', 'order:title', sampleGuideDataForOrder, ascending],
+        ['Title (Reverse)', 'order:-title', sampleGuideDataForOrder, descending],
+        ['Difficulty', 'order:difficulty', sampleGuideDataForOrder, ascending],
+        ['Difficulty (Reverse)', 'order:-difficulty', sampleGuideDataForOrder, ratingMissing],
+        ['Playthroughs', 'order:playthroughs', sampleGuideDataForOrder, ascending],
+        ['Playthroughs (Reverse)', 'order:-playthroughs', sampleGuideDataForOrder, ratingMissing],
+        ['Hours', 'order:hours', sampleGuideDataForOrder, ascending],
+        ['Hours (Reverse)', 'order:-hours', sampleGuideDataForOrder, ratingMissing],
+        ['Published', 'order:published', sampleGuideDataForOrder, ascending],
+        ['Published (Reverse)', 'order:-published', sampleGuideDataForOrder, descending],
+    ];
+    describe('Order Search', () => test.each(orderScenarios)('%s - `%s`', genericTest));
 
     // platform:
     const platformScenarios = [
-        ['Exact', 'platform:ps5', 1, ['Witchcrafty Trophy Guide']],
-        ['Partial (Returns Nothing)', 'platform:ps', 0, []],
-        ['PSV Support (Tag Name Is Vita)', 'platform:psv', 2, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Multiple', 'platform:ps3,ps4,psv', 1, ['Rogue Legacy Trophy Guide']],
-        ['Multiple (Out Of Order)', 'platform:psv,ps3,ps4', 1, ['Rogue Legacy Trophy Guide']],
-        ['Multiple (Some)', 'platform:psv,ps3', 1, ['Rogue Legacy Trophy Guide']],
-        ['Exclusions (Single)', 'platform:psv,-ps3', 1, ['Pato Box Trophy Guide']],
-        ['Exclusions (Multiple)', 'platform:psv,-ps3,-ps4', 1, ['Pato Box Trophy Guide']],
+        ['Exact', 'platform:ps5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
+        ['Partial (Returns Nothing)', 'platform:ps', sampleGuideDataForTextAndAuthor, []],
+        ['PSV Support (Tag Name Is Vita)', 'platform:psv', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Multiple', 'platform:ps3,ps4,psv', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
+        ['Multiple (Out Of Order)', 'platform:psv,ps3,ps4', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
+        ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
+        ['Exclusions (Single)', 'platform:psv,-ps3', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Exclusions (Multiple)', 'platform:psv,-ps3,-ps4', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
     ];
-    describe('Platform Search', () => {
-        test.each(platformScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const result = filter(guideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('Platform Search', () => test.each(platformScenarios)('%s - `%s`', genericTest));
 
     // platinum:
     const platinumScenarios = [
-        ['Yes', 'platinum:yes', 1, ['Final Fantasy XIV Trophy Guide']],
-        ['No', 'platinum:no', 1, ['Final Fantasy XIV - Heavensward DLC Trophy Guide']],
-        ['Garbage Text (Ignored)', 'platinum:garbage', 2, ['Final Fantasy XIV Trophy Guide', 'Final Fantasy XIV - Heavensward DLC Trophy Guide']],
+        ['Yes', 'platinum:yes', sampleGuideDataForDlcAndPlatinum, ['I Am A Platinum Trophy Guide']],
+        ['No', 'platinum:no', sampleGuideDataForDlcAndPlatinum, ['I Am A Trophy Guide Without A Platinum', 'I Am A DLC Guide']],
+        ['Garbage Text (Ignored)', 'platinum:garbage', sampleGuideDataForDlcAndPlatinum, ['I Am A Platinum Trophy Guide', 'I Am A Trophy Guide Without A Platinum', 'I Am A DLC Guide']],
     ];
-    describe('Platinum Search', () => {
-        test.each(platinumScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const isolatedGuideData = getSampleGuideDataForDlcAndPlatinumSearch();
-            const result = filter(isolatedGuideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('Platinum Search', () => test.each(platinumScenarios)('%s - `%s`', genericTest));
+
+    // playthroughs:
+    const playthroughsScenarios = [
+        ['Equals', 'playthroughs:10', sampleGuideDataForRatingsAndAttributes, ['Rating 10']],
+        ['Greater Than', 'playthroughs:>7', sampleGuideDataForRatingsAndAttributes, ['Rating 8', 'Rating 9', 'Rating 10']],
+        ['Less Than', 'playthroughs:<4', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3']],
+        // TODO garbage
+    ];
+    describe('Playthroughs Search', () => test.each(playthroughsScenarios)('%s - `%s`', genericTest));
 
     // src:
     const sourceScenarios = [
-        ['Knoef', 'src:knoef', 1, ['Synthetic Lover Trophy Guide']],
-        ['Powerpyx', 'src:powerpyx', 1, ['Nobody Wants To Die Trophy Guide & Roadmap']],
-        ['PSNProfiles', 'src:psnp', 1, ['PSNProfiles: Writing a Guide']],
+        ['Knoef', 'src:knoef', sampleGuideDataForSource, ['Synthetic Lover Trophy Guide']],
+        ['Powerpyx', 'src:powerpyx', sampleGuideDataForSource, ['Nobody Wants To Die Trophy Guide & Roadmap']],
+        ['PSNProfiles', 'src:psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
     ];
-    describe('Source Search', () => {
-        test.each(sourceScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const isolatedGuideData = getSampleGuideDataForSourceSearch();
-            const result = filter(isolatedGuideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('Source Search', () => test.each(sourceScenarios)('%s - `%s`', genericTest));
 
     // type:
     const typeScenarios = [
-        ['Walkthrough', 'type:trophy-guide', 1, ['Final Fantasy XIV Trophy Guide']],
-        ['Trophy Guide', 'type:guide', 1, ['Final Fantasy XIV - Endwalker Encounter Guide (Pandæmonium)']],
-        ['Garbage Text (Ignored)', 'type:garbage', 2, ['Final Fantasy XIV Trophy Guide', 'Final Fantasy XIV - Endwalker Encounter Guide (Pandæmonium)']],
+        ['Trophy Guide', 'type:trophy-guide', sampleGuideDataForType, ['I Am A Trophy Guide']],
+        ['Walkthrough', 'type:guide', sampleGuideDataForType, ['I Am A Walkthrough']],
+        ['Garbage Text (Ignored)', 'type:garbage', sampleGuideDataForType, ['I Am A Trophy Guide', 'I Am A Walkthrough']],
     ];
-    describe('Guide Type Search', () => {
-        test.each(typeScenarios)('%s - `%s`', (_, b: string, c, d) => {
-            const isolatedGuideData = getSampleDataForGuideTypeSearch();
-            const result = filter(isolatedGuideData, b);
-            expect(result.length).toBe(c);
-            expect(result.map(r => r.title)).toStrictEqual(d);
-        });
-    });
+    describe('Type Search', () => test.each(typeScenarios)('%s - `%s`', genericTest));
 })();
 
-// sample data
-function getSampleGuideData(): Record<string, Guide> {
+function getSampleGuideDataForTextAndAuthor(): Record<string, Guide> {
     return {
-        "1": {
-            "attr": 0,
-            "authors": [
-                "Sly-Ripper",
-                "BlindMango",
-                "Dreggit"
-            ],
-            "d": 1410321600000,
-            "rating": [
-                null,
-                null,
-                null
-            ],
-            "src": 1,
-            "title": "PSNProfiles: Writing a Guide",
+        '1': {
+            attr: 0,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'PSNProfiles: Writing a Guide',
         },
-        "18277": {
-            "attr": 0,
-            "authors": [
-                "Sly-Ripper",
-                "B1rvine",
-                "MMDE"
-            ],
-            "d": 1703826000000,
-            "rating": [
-                null,
-                null,
-                null
-            ],
-            "src": 1,
-            "title": "PSNProfiles: Leaderboard Rules & Disputes",
+        '18277': {
+            attr: 0,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'PSNProfiles: Leaderboard Rules & Disputes',
         },
-        "15002": {
-            "attr": 33,
-            "authors": [
-                "langdon",
-                "Michael2399"
-            ],
-            "d": 1665720000000,
-            "image": "7d9205/L1149bb.png",
-            "rating": [
-                8,
-                1,
-                20
-            ],
-            "src": 1,
-            "title": "Pato Box Trophy Guide",
-            "trophies": [
-                1,
-                2,
-                7,
-                42
-            ],
+        '15002': {
+            attr: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: ['langdon', 'Michael2399'],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'Pato Box Trophy Guide',
         },
-        "16557": {
-            "attr": 17,
-            "authors": [
-                "HealedFiend13",
-                "langdon"
-            ],
-            "d": 1682913600000,
-            "image": "6faced/Lcc905d.png",
-            "rating": [
-                3,
-                1,
-                3
-            ],
-            "src": 1,
-            "title": "Witchcrafty Trophy Guide",
-            "trophies": [
-                1,
-                7,
-                6,
-                16
-            ]
+        '16557': {
+            attr: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            authors: ['HealedFiend13', 'langdon'],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'Witchcrafty Trophy Guide',
         },
-        "19678": {
-            "attr": 45,
-            "authors": [
-                "jmddb99"
-            ],
-            "d": 1720137600000,
-            "image": "89c7b7/L311f0d.png",
-            "rating": [
-                8,
-                3,
-                40
-            ],
-            "src": 1,
-            "title": "Rogue Legacy Trophy Guide",
-            "trophies": [
-                1,
-                6,
-                11,
-                12
-            ]
+        '19678': {
+            attr: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'Rogue Legacy Trophy Guide',
         },
     };
 }
 
-function getSampleGuideDataForSourceSearch(): Record<string, Guide> {
+function getSampleGuideDataForSource(): Record<string, Guide> {
     return {
-        // psnp
-        "1": {
-            "attr": 0,
-            "authors": [
-                "Sly-Ripper",
-                "BlindMango",
-                "Dreggit",
-            ],
-            "d": 1410321600000,
-            "rating": [
-                null,
-                null,
-                null,
-            ],
-            "src": 1,
-            "title": "PSNProfiles: Writing a Guide",
+        '1': {
+            attr: 0,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: SOURCE_PSNP,
+            title: 'PSNProfiles: Writing a Guide',
         },
-        // powerpyx
-        "nobody-wants-to-die-trophy-guide-roadmap/": {
-            "attr": 17,
-            "authors": [
-                "Ashbo",
-            ],
-            "d": 1721951956000,
-            "image": "915b6e/L110e56.png",
-            "rating": [
-                2,
-                1,
-                4.5,
-            ],
-            "src": 3,
-            "title": "Nobody Wants To Die Trophy Guide & Roadmap",
-            "trophies": [
-                1,
-                7,
-                9,
-                10,
-            ],
+        'nobody-wants-to-die-trophy-guide-roadmap/': {
+            attr: 0,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: SOURCE_POWERPYX,
+            title: 'Nobody Wants To Die Trophy Guide & Roadmap',
         },
-        // knoef
-        "trophy-guides/ps5/synthetic-lover-trophy-guide/": {
-            "attr": 17,
-            "authors": [
-                "Siralja",
-            ],
-            "d": 1721762995000,
-            "image": "6e55e1/Lccc650.png",
-            "rating": [
-                1,
-                0,
-                1,
-            ],
-            "src": 2,
-            "title": "Synthetic Lover Trophy Guide",
-            "trophies": [
-                1,
-                10,
-                4,
-                0,
-            ],
+        'trophy-guides/ps5/synthetic-lover-trophy-guide/': {
+            attr: 0,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: SOURCE_KNOEF,
+            title: 'Synthetic Lover Trophy Guide',
         },
     };
 }
 
-function getSampleGuideDataForDlcAndPlatinumSearch(): Record<string, Guide> {
-    return {
-        "12649": {
-            "attr": 273,
-            "authors": [
-                "Rebourne07",
-                "MakoSOLIDER",
-                "zekunlu",
-            ],
-            "d": 1631246400000,
-            "image": "10c1f3/L7f52a5.png",
-            "rating": [
-                6,
-                1,
-                999,
-            ],
-            "src": 1,
-            "title": "Final Fantasy XIV Trophy Guide",
-            "trophies": [
-                1,
-                0,
-                12,
-                40,
-            ],
+function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
+    const guides = {
+        '1': {
+            attr: IS_TROPHY_GUIDE,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'I Am A Platinum Trophy Guide',
+            trophies: [1, 0, 0, 0],
         },
-        "12669": {
-            "attr": 275,
-            "authors": [
-                "zekunlu",
-                "Rebourne07",
-            ],
-            "d": 1631246400000,
-            "image": "10c1f3/L7f52a5.png",
-            "rating": [
-                7,
-                1,
-                999,
-            ],
-            "src": 1,
-            "title": "Final Fantasy XIV - Heavensward DLC Trophy Guide",
-            "trophies": [
-                0,
-                0,
-                0,
-                13,
-            ],
+        '2': {
+            attr: IS_TROPHY_GUIDE,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'I Am A Trophy Guide Without A Platinum',
+            trophies: [0, 0, 0, 0],
+        },
+        '3': {
+            attr: IS_DLC,
+            authors: [],
+            d: 1649390400000,
+            rating: [],
+            src: 0,
+            title: 'I Am A DLC Guide',
         },
     };
+
+    return guides;
 }
 
-function getSampleDataForGuideTypeSearch(): Record<string, Guide> {
-    return {
-        "12649": {
-            "attr": 273,
-            "authors": [
-                "Rebourne07",
-                "MakoSOLIDER",
-                "zekunlu",
-            ],
-            "d": 1631246400000,
-            "image": "10c1f3/L7f52a5.png",
-            "rating": [
-                6,
-                1,
-                999,
-            ],
-            "src": 1,
-            "title": "Final Fantasy XIV Trophy Guide",
-            "trophies": [
-                1,
-                0,
-                12,
-                40,
-            ],
+function getSampleGuideDataForTypeAndAttributes(): Record<string, Guide> {
+    const guides = {
+        '12649': {
+            attr: IS_TROPHY_GUIDE,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'I Am A Trophy Guide',
         },
-        "13383": {
-            "attr": 16,
-            "authors": [
-                "zekunlu",
-            ],
-            "d": 1649390400000,
-            "image": "10c1f3/L7f52a5.png",
-            "rating": [
-                null,
-                null,
-                null
-            ],
-            "src": 1,
-            "title": "Final Fantasy XIV - Endwalker Encounter Guide (Pandæmonium)",
+        '13383': {
+            attr: 0,
+            authors: [],
+            d: 1649390400000,
+            rating: [],
+            src: 0,
+            title: 'I Am A Walkthrough',
         },
     };
+
+    return guides;
+}
+
+function getSampleGuideDataForOrder(): Record<string, Guide> {
+    const guides = ['A', 'D', 'Y', 'Z']
+        .reduce((gz: Record<string, Guide>, letter, i) => {
+            // make Z have no ratings to handle null searching
+            const rating = letter === 'Z' ? null : i + 1;
+
+            gz[letter] = {
+                attr: 0,
+                authors: [],
+                d: i + 1,
+                rating: [rating, rating, rating],
+                src: 0,
+                title: `${letter} Guide`,
+            };
+            return gz;
+        }, {});
+
+    return guides;
+}
+
+function getSampleGuideDataForRatingsAndAttributes() {
+    const guides: Record<string, Guide> = {};
+
+    const attributes = {
+        '1': HAS_BUGGY_TROPHIES,
+        '2': HAS_ONLINE_TROPHIES,
+        '3': HAS_MISSABLE_TROPHIES,
+        '4': HAS_BUGGY_TROPHIES | HAS_ONLINE_TROPHIES,
+        '5': HAS_BUGGY_TROPHIES | HAS_MISSABLE_TROPHIES,
+        '6': HAS_ONLINE_TROPHIES | HAS_MISSABLE_TROPHIES,
+        '7': HAS_BUGGY_TROPHIES | HAS_ONLINE_TROPHIES | HAS_MISSABLE_TROPHIES,
+    };
+
+    for (let i = 1; i <= 10; i++) {
+        guides[i] = {
+            attr: attributes[i.toString()] ?? 0,
+            authors: [],
+            d: 0,
+            rating: [i, i, i],
+            src: 0,
+            title: `Rating ${i}`,
+        };
+    };
+
+    return guides;
 }
