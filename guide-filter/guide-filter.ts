@@ -19,6 +19,10 @@ import {
 export function filter(guides: Record<string, Guide>, searchText: string) {
     const tokens = new tokenParser().parse(searchText);
 
+    // parse order details
+    const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? '';
+    const reverse = tokens.order?.startsWith('-') ?? false;
+
     return Object.values(guides)
         .filter(g => {
             // the general strategy here:
@@ -30,23 +34,47 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
                 return false;
             }
 
+            // difficulty token
+            if (tokens['difficulty'] && compareRatingForFiltering(0, tokens['difficulty'], g) === false) {
+                return false;
+            }
+
+            // hours token
+            if (tokens['hours'] && compareRatingForFiltering(1, tokens['hours'], g) === false) {
+                return false;
+            }
+
+            // playthroughs token
+            if (tokens['playthroughs'] && compareRatingForFiltering(2, tokens['playthroughs'], g) === false) {
+                return false;
+            }
+
+            // buggy token
+            if (tokens['buggy'] && compareYesNoAttributeForFiltering(tokens['buggy'], HAS_BUGGY_TROPHIES, g) === false) {
+                return false;
+            }
+
+            // dlc token
+            if (tokens['dlc'] && compareYesNoAttributeForFiltering(tokens['dlc'], IS_DLC, g) === false) {
+                return false;
+            }
+
+            // missable token
+            if (tokens['missable'] && compareYesNoAttributeForFiltering(tokens['missable'], HAS_MISSABLE_TROPHIES, g) === false) {
+                return false;
+            }
+
+            // online token
+            if (tokens['online'] && compareYesNoAttributeForFiltering(tokens['online'], HAS_ONLINE_TROPHIES, g) === false) {
+                return false;
+            }
+
             // author token
             if (tokens['author']) {
                 const authors = tokens['author'].split(',');
 
                 // if they provided a list, they all need to match (every instead of some)
                 if (authors.every((a: string) => g.authors.some(b => b.toLowerCase().includes(a.toLowerCase()))) === false) {
-                    return false;
-                }
-            }
-
-            // dlc token
-            if (tokens['dlc']) {
-                if (tokens['dlc'].toLowerCase() === 'yes' && (g.attr & IS_DLC) === 0) {
-                    return false;
-                }
-
-                if (tokens['dlc'].toLowerCase() === 'no' && (g.attr & IS_DLC) !== 0) {
                     return false;
                 }
             }
@@ -77,12 +105,12 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
             // platinum token
             if (tokens['platinum']) {
                 // want platinum but there isn't one? bad
-                if (tokens['platinum'].toLowerCase() === 'yes' && g.trophies[0] === 0) {
+                if (tokens['platinum'].toLowerCase() === 'yes' && (!g.trophies || g.trophies[0] === 0)) {
                     return false;
                 }
 
                 // don't want platinum but there is one? bad
-                if (tokens['platinum'].toLowerCase() === 'no' && g.trophies[0] === 1) {
+                if (tokens['platinum'].toLowerCase() === 'no' && g.trophies && g.trophies[0] === 1) {
                     return false;
                 }
             }
@@ -115,6 +143,25 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
 
             // no reason for it not to be a match? return it
             return true;
+        })
+        .sort((rowA, rowB) => {
+            const { a, b } = reverse ? { a: rowB, b: rowA } : { a: rowA, b: rowB };
+
+            switch (orderBy) {
+                case 'title':
+                    return a.title.localeCompare(b.title);
+                case 'difficulty':
+                    return compareRatingForSorting(0, a, b, reverse ? 0 : 9999);
+                case 'playthroughs':
+                    return compareRatingForSorting(1, a, b, reverse ? 0 : 9999);
+                case 'hours':
+                    return compareRatingForSorting(2, a, b, reverse ? 0 : 9999);
+                case 'published':
+                    return a.d - b.d;
+                default:
+                    // default order is just how the guide is in there... maybe default to published?
+                    return 1;
+            }
         });
 }
 
@@ -143,6 +190,48 @@ function buildPlatformList(guide) {
 }
 
 // TODO its own file? its own tests?
+function compareRatingForFiltering(index: number, tokenValue: string, guide: Guide) {
+    const difficultyNumber = Number(tokenValue.replace(/<|>/, ''));
+
+    if (tokenValue.startsWith('>')) {
+        // if difficulty starts with ">" find guides with higher difficulty
+        if (!guide.rating || !guide.rating[index] || guide.rating[index] <= difficultyNumber) {
+            return false;
+        }
+    }
+    else if (tokenValue.startsWith('<')) {
+        // if difficulty starts with "<" find guides with lower difficulty
+        if (!guide.rating || !guide.rating[index] || guide.rating[index] >= difficultyNumber) {
+            return false;
+        }
+    }
+    else if (!isNaN(difficultyNumber)) {
+        // if difficulty is a number, find perfect matches
+        if (guide.rating[index] !== difficultyNumber) {
+            return false;
+        }
+    }
+}
+
+// TODO its own file? its own tests?
+function compareRatingForSorting(index: number, a: Guide, b: Guide, defaultValue: number) {
+    const valueA = a.rating && a.rating[index] ? a.rating[index] : defaultValue;
+    const valueB = b.rating && b.rating[index] ? b.rating[index] : defaultValue;
+    return valueA - valueB;
+}
+
+// TODO its own file? its own tests?
+function compareYesNoAttributeForFiltering(tokenValue: string, attribute: number, guide: Guide) {
+    if (tokenValue.toLowerCase() === 'yes' && (guide.attr & attribute) === 0) {
+        return false;
+    }
+
+    if (tokenValue.toLowerCase() === 'no' && (guide.attr & attribute) !== 0) {
+        return false;
+    }
+}
+
+// TODO its own file? its own tests?
 class tokenParser {
     STATE_TOKEN_OR_TEXT: number;
     STATE_TEXT_FOR_TOKEN: number;
@@ -158,18 +247,17 @@ class tokenParser {
         this.ACTION_COMPLETE = 3;
     }
 
-    parse(input: string) {
-        var tokens = {
-            leftOverTerms: '',
-        },
-            textToParse = (input || '') + '\x01',
-            state = this.STATE_TOKEN_OR_TEXT,
-            parensLevel = 0,
-            tokenBeingBuilt = '',
-            textBeingBuilt = '',
-            i: number,
+    parse(input: string): Record<string, string> {
+        const textToParse = (input || '') + '\x01',
+            tokens = { leftOverTerms: '', };
+
+        let action: number, // TODO enum/or piped const list
             chr: string,
-            action: number; // TODO enum/or piped const list
+            i: number,
+            parensLevel = 0,
+            state = this.STATE_TOKEN_OR_TEXT,
+            textBeingBuilt = '',
+            tokenBeingBuilt = '';
 
         for (i = 0; i < textToParse.length; i++) {
             chr = textToParse[i];
