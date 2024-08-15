@@ -30,7 +30,7 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
             // - so quit (return false to filter) if something is amiss
 
             // use leftOverTerms to search title
-            if (tokens.leftOverTerms && g.title.includes(tokens.leftOverTerms) === false) {
+            if (tokens.leftOverTerms && g.title.toLowerCase().includes(tokens.leftOverTerms.toLowerCase()) === false) {
                 return false;
             }
 
@@ -40,12 +40,12 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
             }
 
             // hours token
-            if (tokens['hours'] && compareRatingForFiltering(1, tokens['hours'], g) === false) {
+            if (tokens['hours'] && compareRatingForFiltering(2, tokens['hours'], g) === false) {
                 return false;
             }
 
             // playthroughs token
-            if (tokens['playthroughs'] && compareRatingForFiltering(2, tokens['playthroughs'], g) === false) {
+            if (tokens['playthroughs'] && compareRatingForFiltering(1, tokens['playthroughs'], g) === false) {
                 return false;
             }
 
