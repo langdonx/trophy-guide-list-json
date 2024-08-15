@@ -43,12 +43,14 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     const basicSearchScenarios = [
         ['Full Match', 'PSNProfiles: Writing a Guide', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide']],
         ['Partial Match', 'Rules & Disputes', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Leaderboard Rules & Disputes']],
+        ['Partial Match (Case Insensitive)', 'psnp', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide', 'PSNProfiles: Leaderboard Rules & Disputes']],
     ];
     describe('Basic Search', () => test.each(basicSearchScenarios)('%s - `%s`', genericTest));
 
     // author:
     const authorScenarios = [
         ['Full Match', 'author:Michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Full Match (Case Insensitive)', 'author:michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
         ['Partial Match', 'author:ichael239', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
         ['Multiple', 'author:langdon,Michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
         ['Multiple (Out Of Order)', 'author:Michael2399,langdon', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
@@ -67,10 +69,11 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 
     // difficulty:
     const difficultyScenarios = [
-        ['Equals', 'difficulty:3', sampleGuideDataForRatingsAndAttributes, ['Rating 3']],
-        ['Greater Than', 'difficulty:>8', sampleGuideDataForRatingsAndAttributes, ['Rating 9', 'Rating 10']],
-        ['Less Than', 'difficulty:<3', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2']],
-        // TODO garbage
+        ['Equals', 'difficulty:3', getSampleGuideDataForRatingsAndAttributes(0), ['Rating 3']],
+        ['Greater Than', 'difficulty:>8', getSampleGuideDataForRatingsAndAttributes(0), ['Rating 9', 'Rating 10']],
+        ['Less Than', 'difficulty:<3', getSampleGuideDataForRatingsAndAttributes(0), ['Rating 1', 'Rating 2']],
+        ['Empty', 'difficulty:', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+        ['Garbage', 'difficulty:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
     ];
     describe('Difficulty Search', () => test.each(difficultyScenarios)('%s - `%s`', genericTest));
 
@@ -84,10 +87,11 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 
     // hours:
     const hoursScenarios = [
-        ['Equals', 'hours:1', sampleGuideDataForRatingsAndAttributes, ['Rating 1']],
-        ['Greater Than', 'hours:>9', sampleGuideDataForRatingsAndAttributes, ['Rating 10']],
-        ['Less Than', 'hours:<2', sampleGuideDataForRatingsAndAttributes, ['Rating 1']],
-        // TODO garbage
+        ['Equals', 'hours:1', getSampleGuideDataForRatingsAndAttributes(2), ['Rating 1']],
+        ['Greater Than', 'hours:>9', getSampleGuideDataForRatingsAndAttributes(2), ['Rating 10']],
+        ['Less Than', 'hours:<2', getSampleGuideDataForRatingsAndAttributes(2), ['Rating 1']],
+        ['Empty', 'hours:', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+        ['Garbage', 'hours:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
     ];
     describe('Hours Search', () => test.each(hoursScenarios)('%s - `%s`', genericTest));
 
@@ -128,8 +132,10 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     // platform:
     const platformScenarios = [
         ['Exact', 'platform:ps5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
+        ['Exact (Case Insensitive)', 'platform:PS5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
         ['Partial (Returns Nothing)', 'platform:ps', sampleGuideDataForTextAndAuthor, []],
-        ['PSV Support (Tag Name Is Vita)', 'platform:psv', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Vita Support', 'platform:vita', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Vita Support (PSV Alias)', 'platform:psv', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
         ['Multiple', 'platform:ps3,ps4,psv', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
         ['Multiple (Out Of Order)', 'platform:psv,ps3,ps4', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
         ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
@@ -148,10 +154,11 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 
     // playthroughs:
     const playthroughsScenarios = [
-        ['Equals', 'playthroughs:10', sampleGuideDataForRatingsAndAttributes, ['Rating 10']],
-        ['Greater Than', 'playthroughs:>7', sampleGuideDataForRatingsAndAttributes, ['Rating 8', 'Rating 9', 'Rating 10']],
-        ['Less Than', 'playthroughs:<4', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3']],
-        // TODO garbage
+        ['Equals', 'playthroughs:10', getSampleGuideDataForRatingsAndAttributes(1), ['Rating 10']],
+        ['Greater Than', 'playthroughs:>7', getSampleGuideDataForRatingsAndAttributes(1), ['Rating 8', 'Rating 9', 'Rating 10']],
+        ['Less Than', 'playthroughs:<4', getSampleGuideDataForRatingsAndAttributes(1), ['Rating 1', 'Rating 2', 'Rating 3']],
+        ['Empty', 'playthroughs:', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+        ['Garbage', 'playthroughs:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
     ];
     describe('Playthroughs Search', () => test.each(playthroughsScenarios)('%s - `%s`', genericTest));
 
@@ -322,7 +329,7 @@ function getSampleGuideDataForOrder(): Record<string, Guide> {
     return guides;
 }
 
-function getSampleGuideDataForRatingsAndAttributes() {
+function getSampleGuideDataForRatingsAndAttributes(index?: number) {
     const guides: Record<string, Guide> = {};
 
     const attributes = {
@@ -336,11 +343,26 @@ function getSampleGuideDataForRatingsAndAttributes() {
     };
 
     for (let i = 1; i <= 10; i++) {
+        // difficulty, playthroughs, hours
+        const rating = [0, 0, 0];
+
+        // if an index wasn't provided, set all ratings the same, but
+        // for test clarity, set ratings differently to avoid bugs
+        // e.g. hours:3 implementation used to be checking playthroughs
+        if (index === undefined) {
+            rating[0] = i;
+            rating[1] = i;
+            rating[2] = i;
+        }
+        else {
+            rating[index] = i;
+        }
+
         guides[i] = {
             attr: attributes[i.toString()] ?? 0,
             authors: [],
             d: 0,
-            rating: [i, i, i],
+            rating,
             src: 0,
             title: `Rating ${i}`,
         };
