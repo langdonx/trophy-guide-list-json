@@ -34,8 +34,10 @@ const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAt
 
 function genericTest(_: string, search: string, data: Record<string, Guide>, expectedTitles: string[]) {
     const result = filter(data, search);
-    expect(result.length).toBe(expectedTitles.length);
-    expect(result.map(r => r.title)).toStrictEqual(expectedTitles);
+    expect(JSON.stringify(result).substring(0, 1)).toBe('{'); // is this dumb?
+    const guides = Object.values(result);
+    expect(guides.length).toBe(expectedTitles.length);
+    expect(guides.map(r => r.title)).toStrictEqual(expectedTitles);
 };
 
 (async () => {

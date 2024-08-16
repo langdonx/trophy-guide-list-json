@@ -16,15 +16,15 @@ import {
     HAS_MISSABLE_TROPHIES,
 } from '../types/attributes';
 
-export function filter(guides: Record<string, Guide>, searchText: string) {
+export function filter(guides: Record<string, Guide>, searchText: string): Record<string, Guide> {
     const tokens = new tokenParser().parse(searchText);
 
     // parse order details
     const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? '';
     const reverse = tokens.order?.startsWith('-') ?? false;
 
-    return Object.values(guides)
-        .filter(g => {
+    const result = Object.entries(guides)
+        .filter(([gKey, g]) => {
             // the general strategy here:
             // - everything is a match until it's not
             // - so quit (return false to filter) if something is amiss
@@ -144,7 +144,10 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
             // no reason for it not to be a match? return it
             return true;
         })
-        .sort((rowA, rowB) => {
+        .sort((tupleA, tupleB) => {
+            const [rowKeyA, rowA] = tupleA;
+            const [rowKeyB, rowB] = tupleB;
+
             const { a, b } = reverse ? { a: rowB, b: rowA } : { a: rowA, b: rowB };
 
             switch (orderBy) {
@@ -163,6 +166,9 @@ export function filter(guides: Record<string, Guide>, searchText: string) {
                     return 1;
             }
         });
+
+    // turn the entries back into an object
+    return Object.fromEntries(result);
 }
 
 // TODO its own file? its own tests?
