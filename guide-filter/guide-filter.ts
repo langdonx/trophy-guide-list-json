@@ -16,7 +16,7 @@ import {
     HAS_MISSABLE_TROPHIES,
 } from '../types/attributes';
 
-export function filter(guides: Record<string, Guide>, searchText: string): Record<string, Guide> {
+export function filter(guides: Record<string, Guide>, searchText: string): (Guide & { id: string })[] {
     const tokens = new tokenParser().parse(searchText);
 
     // parse order details
@@ -165,14 +165,18 @@ export function filter(guides: Record<string, Guide>, searchText: string): Recor
                     // default order is just how the guide is in there... maybe default to published?
                     return 1;
             }
-        });
+        })
+        .map(([id, guide]) => ({
+            id,
+            ...guide,
+        }));
 
     // turn the entries back into an object
-    return Object.fromEntries(result);
+    return result;
 }
 
 // TODO its own file? its own tests?
-function buildPlatformList(guide) {
+function buildPlatformList(guide: Guide) {
     let platforms = [];
     if (guide.attr & PLATFORM_PS3) {
         platforms.push('ps3');
@@ -217,6 +221,8 @@ function compareRatingForFiltering(index: number, tokenValue: string, guide: Gui
             return false;
         }
     }
+
+    return true;
 }
 
 // TODO its own file? its own tests?
@@ -235,6 +241,8 @@ function compareYesNoAttributeForFiltering(tokenValue: string, attribute: number
     if (tokenValue.toLowerCase() === 'no' && (guide.attr & attribute) !== 0) {
         return false;
     }
+
+    return true;
 }
 
 // TODO its own file? its own tests?
@@ -254,8 +262,8 @@ class tokenParser {
     }
 
     parse(input: string): Record<string, string> {
-        const textToParse = (input || '') + '\x01',
-            tokens = { leftOverTerms: '', };
+        const textToParse = (input || '') + '\x01'
+        const tokens: Record<string, string> = { leftOverTerms: '', };
 
         let action: number, // TODO enum/or piped const list
             chr: string,
