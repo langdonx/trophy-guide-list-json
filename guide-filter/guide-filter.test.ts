@@ -33,14 +33,37 @@ const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAt
 //      - author:+langdon (guides I solo authored)
 
 function genericTest(_: string, search: string, data: Record<string, Guide>, expectedTitles: string[]) {
-    const result = filter(data, search);
-    expect(JSON.stringify(result).substring(0, 1)).toBe('{'); // is this dumb?
-    const guides = Object.values(result);
+    const guides = filter(data, search);
     expect(guides.length).toBe(expectedTitles.length);
-    expect(guides.map(r => r.title)).toStrictEqual(expectedTitles);
+    expect(guides.map(guide => guide.title)).toStrictEqual(expectedTitles);
 };
 
 (async () => {
+    test('Guide Returns Expected Data', () => {
+        const guideData: Record<string, Guide> = {
+            '123': {
+                attr: PLATFORM_PC | PLATFORM_VITA,
+                authors: ['hello', 'world'],
+                d: 666,
+                rating: [1, 2, 3],
+                src: SOURCE_PSNP,
+                title: 'Greatest Guide Ever',
+            },
+        };
+
+        const guides = filter(guideData, '');
+
+        expect(guides).toStrictEqual([{
+            attr: PLATFORM_PC | PLATFORM_VITA,
+            authors: ['hello', 'world'],
+            id: '123', // verify id was injected properly
+            d: 666,
+            rating: [1, 2, 3],
+            src: SOURCE_PSNP,
+            title: 'Greatest Guide Ever',
+        }]);
+    });
+
     // raw text
     const basicSearchScenarios = [
         ['Full Match', 'PSNProfiles: Writing a Guide', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide']],
