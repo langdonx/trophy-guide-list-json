@@ -34,7 +34,6 @@ const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAt
 
 function genericTest(_: string, search: string, data: Record<string, Guide>, expectedTitles: string[]) {
     const guides = filter(data, search);
-    expect(guides.length).toBe(expectedTitles.length);
     expect(guides.map(guide => guide.title)).toStrictEqual(expectedTitles);
 };
 
@@ -159,11 +158,11 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Exact', 'platform:ps5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
         ['Exact (Case Insensitive)', 'platform:PS5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
         ['Partial (Returns Nothing)', 'platform:ps', sampleGuideDataForTextAndAuthor, []],
-        ['Vita Support', 'platform:vita', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Vita Support (PSV Alias)', 'platform:psv', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Vita Support', 'platform:vita', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Vita Support (PSV Alias)', 'platform:psv', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
         ['Multiple', 'platform:ps3,ps4,psv', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
         ['Multiple (Out Of Order)', 'platform:psv,ps3,ps4', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
-        ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
+        ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Rogue Legacy Trophy Guide']],
         ['Exclusions (Single)', 'platform:psv,-ps3', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
         ['Exclusions (Multiple)', 'platform:psv,-ps3,-ps4', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
     ];
@@ -213,6 +212,14 @@ function getSampleGuideDataForTextAndAuthor(): Record<string, Guide> {
             rating: [],
             src: 0,
             title: 'PSNProfiles: Writing a Guide',
+        },
+        '132': {
+            attr: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: [],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
         },
         '18277': {
             attr: 0,

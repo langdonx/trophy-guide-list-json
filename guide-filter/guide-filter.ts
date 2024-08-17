@@ -97,7 +97,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
                     return false;
                 }
 
-                if (cannotHave.length > 0 && cannotHave.every((p: string) => guidePlatforms.includes(p)) === true) {
+                if (cannotHave.length > 0 && cannotHave.some((p: string) => guidePlatforms.includes(p)) === true) {
                     return false;
                 }
             }
