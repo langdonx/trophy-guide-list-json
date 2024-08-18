@@ -140,6 +140,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     const descending = ['Z Guide', 'Y Guide', 'D Guide', 'A Guide'];
     const ratingMissing = ['Y Guide', 'D Guide', 'A Guide', 'Z Guide']; // no rating, so Z stays at the end
     const orderScenarios = [
+        ['Default Order (Published Descending)', '', sampleGuideDataForOrder, descending],
         ['Title', 'order:title', sampleGuideDataForOrder, ascending],
         ['Title (Reverse)', 'order:-title', sampleGuideDataForOrder, descending],
         ['Difficulty', 'order:difficulty', sampleGuideDataForOrder, ascending],
@@ -290,7 +291,7 @@ function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
         '1': {
             attr: IS_TROPHY_GUIDE,
             authors: [],
-            d: 0,
+            d: 3,
             rating: [],
             src: 0,
             title: 'I Am A Platinum Trophy Guide',
@@ -299,7 +300,7 @@ function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
         '2': {
             attr: IS_TROPHY_GUIDE,
             authors: [],
-            d: 0,
+            d: 2,
             rating: [],
             src: 0,
             title: 'I Am A Trophy Guide Without A Platinum',
@@ -308,7 +309,7 @@ function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
         '3': {
             attr: IS_DLC,
             authors: [],
-            d: 1649390400000,
+            d: 1,
             rating: [],
             src: 0,
             title: 'I Am A DLC Guide',
@@ -323,7 +324,7 @@ function getSampleGuideDataForTypeAndAttributes(): Record<string, Guide> {
         '12649': {
             attr: IS_TROPHY_GUIDE,
             authors: [],
-            d: 0,
+            d: 2,
             rating: [],
             src: 0,
             title: 'I Am A Trophy Guide',
@@ -331,7 +332,7 @@ function getSampleGuideDataForTypeAndAttributes(): Record<string, Guide> {
         '13383': {
             attr: 0,
             authors: [],
-            d: 1649390400000,
+            d: 1,
             rating: [],
             src: 0,
             title: 'I Am A Walkthrough',

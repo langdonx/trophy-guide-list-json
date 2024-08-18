@@ -20,8 +20,8 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
     const tokens = new tokenParser().parse(searchText);
 
     // parse order details
-    const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? '';
-    const reverse = tokens.order?.startsWith('-') ?? false;
+    const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? 'published';
+    const reverse = tokens.order?.startsWith('-') ?? true;
 
     const result = Object.entries(guides)
         .filter(([gKey, g]) => {
