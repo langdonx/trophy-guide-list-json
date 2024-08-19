@@ -24,7 +24,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
     const reverse = tokens.order?.startsWith('-') ?? true;
 
     const result = Object.entries(guides)
-        .filter(([gKey, g]) => {
+        .filter(([_, g]) => {
             // the general strategy here:
             // - everything is a match until it's not
             // - so quit (return false to filter) if something is amiss
@@ -145,8 +145,8 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             return true;
         })
         .sort((tupleA, tupleB) => {
-            const [rowKeyA, rowA] = tupleA;
-            const [rowKeyB, rowB] = tupleB;
+            const [_, rowA] = tupleA;
+            const [__, rowB] = tupleB;
 
             const { a, b } = reverse ? { a: rowB, b: rowA } : { a: rowA, b: rowB };
 
