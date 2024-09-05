@@ -68,6 +68,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Full Match', 'PSNProfiles: Writing a Guide', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide']],
         ['Partial Match', 'Rules & Disputes', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Leaderboard Rules & Disputes']],
         ['Partial Match (Case Insensitive)', 'psnp', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide', 'PSNProfiles: Leaderboard Rules & Disputes']],
+        ['Colons in Game Names', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
     ];
     describe('Basic Search', () => test.each(basicSearchScenarios)('%s - `%s`', genericTest));
 
