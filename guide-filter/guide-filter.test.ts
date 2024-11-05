@@ -17,7 +17,7 @@ import {
     HAS_MISSABLE_TROPHIES,
 } from '../types/attributes';
 
-const sampleGuideDataForTextAndAuthor = getSampleGuideDataForTextAndAuthor();
+const sampleGuideDataForTextAndAuthor = getSampleGuideDataForTextAndAuthorAndTrophies();
 const sampleGuideDataForDlcAndPlatinum = getSampleGuideDataForDlcAndPlatinum();
 const sampleGuideDataForSource = getSampleGuideDataForSource();
 const sampleGuideDataForType = getSampleGuideDataForTypeAndAttributes();
@@ -196,6 +196,16 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     ];
     describe('Source Search', () => test.each(sourceScenarios)('%s - `%s`', genericTest));
 
+    // trophies:
+    const trophiesScenarios = [
+        ['Equals', 'trophies:30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Witchcrafty Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Equals', 'trophies:<30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+        ['Equals', 'trophies:>30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Pato Box Trophy Guide']],
+        ['Empty', 'hours:', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide']],
+        ['Garbage', 'hours:garbage', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide']],
+    ];
+    describe('Trophies Search', () => test.each(trophiesScenarios)('%s - `%s`', genericTest));
+
     // type:
     const typeScenarios = [
         ['Trophy Guide', 'type:trophy-guide', sampleGuideDataForType, ['I Am A Trophy Guide']],
@@ -205,7 +215,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     describe('Type Search', () => test.each(typeScenarios)('%s - `%s`', genericTest));
 })();
 
-function getSampleGuideDataForTextAndAuthor(): Record<string, Guide> {
+function getSampleGuideDataForTextAndAuthorAndTrophies(): Record<string, Guide> {
     return {
         '1': {
             attr: 0,
@@ -222,6 +232,25 @@ function getSampleGuideDataForTextAndAuthor(): Record<string, Guide> {
             rating: [],
             src: 0,
             title: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
+            trophies: [1, 7, 7, 8],
+        },
+        '15002': {
+            attr: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: ['langdon', 'Michael2399'],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'Pato Box Trophy Guide',
+            trophies: [1, 2, 7, 42],
+        },
+        '16557': {
+            attr: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            authors: ['HealedFiend13', 'langdon'],
+            d: 0,
+            rating: [],
+            src: 0,
+            title: 'Witchcrafty Trophy Guide',
+            trophies: [1, 7, 6, 16],
         },
         '18277': {
             attr: 0,
@@ -231,22 +260,6 @@ function getSampleGuideDataForTextAndAuthor(): Record<string, Guide> {
             src: 0,
             title: 'PSNProfiles: Leaderboard Rules & Disputes',
         },
-        '15002': {
-            attr: PLATFORM_VITA | IS_TROPHY_GUIDE,
-            authors: ['langdon', 'Michael2399'],
-            d: 0,
-            rating: [],
-            src: 0,
-            title: 'Pato Box Trophy Guide',
-        },
-        '16557': {
-            attr: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
-            authors: ['HealedFiend13', 'langdon'],
-            d: 0,
-            rating: [],
-            src: 0,
-            title: 'Witchcrafty Trophy Guide',
-        },
         '19678': {
             attr: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
             authors: [],
@@ -254,6 +267,7 @@ function getSampleGuideDataForTextAndAuthor(): Record<string, Guide> {
             rating: [],
             src: 0,
             title: 'Rogue Legacy Trophy Guide',
+            trophies: [1, 6, 11, 12],
         },
     };
 }
