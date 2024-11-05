@@ -31,7 +31,8 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
         'platinum',
         'playthroughs',
         'src',
-        'type'
+        'type',
+        'trophies',
     ]);
 
     // parse order details
@@ -154,6 +155,39 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
                 if (tokens['type'].toLowerCase() === 'guide' && (g.attr & IS_TROPHY_GUIDE) !== 0) {
                     return false;
                 }
+            }
+
+            // trophies token
+            if (tokens['trophies']) {
+                const tokenValue = tokens['trophies'];
+                const desiredTrophyCount = Number(tokenValue.replace(/<|>/, ''));
+                const guideTrophyCount = g.trophies ? g.trophies.reduce((p, c) => p + c, 0) : 0;
+
+                if (!g.trophies) {
+                    // if the guide doesn't even have trophies, don't include it
+                    return false;
+                }
+
+                if (tokenValue.startsWith('>')) {
+                    // if trophy count starts with ">" find guides with a higher count
+                    if (guideTrophyCount <= desiredTrophyCount) {
+                        return false;
+                    }
+                }
+                else if (tokenValue.startsWith('<')) {
+                    // if trophy count starts with "<" find guides with a lower count
+                    if (guideTrophyCount >= desiredTrophyCount) {
+                        return false;
+                    }
+                }
+                else if (!isNaN(desiredTrophyCount)) {
+                    // if trophy count is a number, find perfect matches
+                    if (guideTrophyCount !== desiredTrophyCount) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             // no reason for it not to be a match? return it
