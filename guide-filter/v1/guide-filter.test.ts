@@ -1,10 +1,8 @@
 import { filter } from './guide-filter';
-import type { Guide } from '../types/guides-v2';
+import type { Guide } from '../../types/guides-v1';
 import {
     SOURCE_PSNP,
     SOURCE_KNOEF,
-    SOURCE_PLATGET,
-    SOURCE_PLAYSTATIONTROPHIES,
     SOURCE_POWERPYX,
     IS_TROPHY_GUIDE,
     IS_DLC,
@@ -17,7 +15,7 @@ import {
     HAS_BUGGY_TROPHIES,
     HAS_ONLINE_TROPHIES,
     HAS_MISSABLE_TROPHIES,
-} from '../types/attributes-v2';
+} from '../../types/attributes-v1';
 
 const sampleGuideDataForTextAndAuthor = getSampleGuideDataForTextAndAuthorAndTrophies();
 const sampleGuideDataForDlcAndPlatinum = getSampleGuideDataForDlcAndPlatinum();
@@ -36,30 +34,32 @@ const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAt
 
 function genericTest(_: string, search: string, data: Record<string, Guide>, expectedTitles: string[]) {
     const guides = filter(data, search);
-    expect(guides.map(guide => guide.n)).toStrictEqual(expectedTitles);
+    expect(guides.map(guide => guide.title)).toStrictEqual(expectedTitles);
 };
 
 (async () => {
     test('Guide Returns Expected Data', () => {
         const guideData: Record<string, Guide> = {
             '123': {
-                a: SOURCE_PSNP | PLATFORM_PC | PLATFORM_VITA,
-                u: ['hello', 'world'],
+                attr: PLATFORM_PC | PLATFORM_VITA,
+                authors: ['hello', 'world'],
                 d: 666,
-                r: [1, 2, 3],
-                n: 'Greatest Guide Ever',
+                rating: [1, 2, 3],
+                src: SOURCE_PSNP,
+                title: 'Greatest Guide Ever',
             },
         };
 
         const guides = filter(guideData, '');
 
         expect(guides).toStrictEqual([{
-            a: SOURCE_PSNP | PLATFORM_PC | PLATFORM_VITA,
-            u: ['hello', 'world'],
+            attr: PLATFORM_PC | PLATFORM_VITA,
+            authors: ['hello', 'world'],
             id: '123', // verify id was injected properly
             d: 666,
-            r: [1, 2, 3],
-            n: 'Greatest Guide Ever',
+            rating: [1, 2, 3],
+            src: SOURCE_PSNP,
+            title: 'Greatest Guide Ever',
         }]);
     });
 
@@ -191,8 +191,6 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     // src:
     const sourceScenarios = [
         ['Knoef', 'src:knoef', sampleGuideDataForSource, ['Synthetic Lover Trophy Guide']],
-        ['PlatGet', 'src:platget', sampleGuideDataForSource, ['Astro Bot Trophy Guide']],
-        ['PlaystationTrophies', 'src:pst', sampleGuideDataForSource, ['Super Stardust Ultra Trophy Guide']],
         ['Powerpyx', 'src:powerpyx', sampleGuideDataForSource, ['Nobody Wants To Die Trophy Guide & Roadmap']],
         ['PSNProfiles', 'src:psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
     ];
@@ -220,50 +218,56 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 function getSampleGuideDataForTextAndAuthorAndTrophies(): Record<string, Guide> {
     return {
         '1': {
-            a: 0,
-            u: [],
+            attr: 0,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'PSNProfiles: Writing a Guide',
+            rating: [],
+            src: 0,
+            title: 'PSNProfiles: Writing a Guide',
         },
         '132': {
-            a: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
-            u: [],
+            attr: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
-            t: [1, 7, 7, 8],
+            rating: [],
+            src: 0,
+            title: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
+            trophies: [1, 7, 7, 8],
         },
         '15002': {
-            a: PLATFORM_VITA | IS_TROPHY_GUIDE,
-            u: ['langdon', 'Michael2399'],
+            attr: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: ['langdon', 'Michael2399'],
             d: 0,
-            r: [],
-            n: 'Pato Box Trophy Guide',
-            t: [1, 2, 7, 42],
+            rating: [],
+            src: 0,
+            title: 'Pato Box Trophy Guide',
+            trophies: [1, 2, 7, 42],
         },
         '16557': {
-            a: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
-            u: ['HealedFiend13', 'langdon'],
+            attr: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            authors: ['HealedFiend13', 'langdon'],
             d: 0,
-            r: [],
-            n: 'Witchcrafty Trophy Guide',
-            t: [1, 7, 6, 16],
+            rating: [],
+            src: 0,
+            title: 'Witchcrafty Trophy Guide',
+            trophies: [1, 7, 6, 16],
         },
         '18277': {
-            a: 0,
-            u: [],
+            attr: 0,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'PSNProfiles: Leaderboard Rules & Disputes',
+            rating: [],
+            src: 0,
+            title: 'PSNProfiles: Leaderboard Rules & Disputes',
         },
         '19678': {
-            a: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
-            u: [],
+            attr: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'Rogue Legacy Trophy Guide',
-            t: [1, 6, 11, 12],
+            rating: [],
+            src: 0,
+            title: 'Rogue Legacy Trophy Guide',
+            trophies: [1, 6, 11, 12],
         },
     };
 }
@@ -271,39 +275,28 @@ function getSampleGuideDataForTextAndAuthorAndTrophies(): Record<string, Guide> 
 function getSampleGuideDataForSource(): Record<string, Guide> {
     return {
         '1': {
-            a: SOURCE_PSNP,
-            u: [],
+            attr: 0,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'PSNProfiles: Writing a Guide',
+            rating: [],
+            src: SOURCE_PSNP,
+            title: 'PSNProfiles: Writing a Guide',
         },
         'nobody-wants-to-die-trophy-guide-roadmap/': {
-            a: SOURCE_POWERPYX,
-            u: [],
+            attr: 0,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'Nobody Wants To Die Trophy Guide & Roadmap',
+            rating: [],
+            src: SOURCE_POWERPYX,
+            title: 'Nobody Wants To Die Trophy Guide & Roadmap',
         },
         'trophy-guides/ps5/synthetic-lover-trophy-guide/': {
-            a: SOURCE_KNOEF,
-            u: [],
+            attr: 0,
+            authors: [],
             d: 0,
-            r: [],
-            n: 'Synthetic Lover Trophy Guide',
-        },
-        'astro-bot-trophy-guide/': {
-            a: SOURCE_PLATGET,
-            u: [],
-            d: 0,
-            r: [],
-            n: 'Astro Bot Trophy Guide',
-        },
-        'super-stardust-ultra/guide/': {
-            a: SOURCE_PLAYSTATIONTROPHIES,
-            u: [],
-            d: 0,
-            r: [],
-            n: 'Super Stardust Ultra Trophy Guide',
+            rating: [],
+            src: SOURCE_KNOEF,
+            title: 'Synthetic Lover Trophy Guide',
         },
     };
 }
@@ -311,27 +304,30 @@ function getSampleGuideDataForSource(): Record<string, Guide> {
 function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
     const guides = {
         '1': {
-            a: IS_TROPHY_GUIDE,
-            u: [],
+            attr: IS_TROPHY_GUIDE,
+            authors: [],
             d: 3,
-            r: [],
-            n: 'I Am A Platinum Trophy Guide',
-            t: [1, 0, 0, 0],
+            rating: [],
+            src: 0,
+            title: 'I Am A Platinum Trophy Guide',
+            trophies: [1, 0, 0, 0],
         },
         '2': {
-            a: IS_TROPHY_GUIDE,
-            u: [],
+            attr: IS_TROPHY_GUIDE,
+            authors: [],
             d: 2,
-            r: [],
-            n: 'I Am A Trophy Guide Without A Platinum',
-            t: [0, 0, 0, 0],
+            rating: [],
+            src: 0,
+            title: 'I Am A Trophy Guide Without A Platinum',
+            trophies: [0, 0, 0, 0],
         },
         '3': {
-            a: IS_DLC,
-            u: [],
+            attr: IS_DLC,
+            authors: [],
             d: 1,
-            r: [],
-            n: 'I Am A DLC Guide',
+            rating: [],
+            src: 0,
+            title: 'I Am A DLC Guide',
         },
     };
 
@@ -341,18 +337,20 @@ function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
 function getSampleGuideDataForTypeAndAttributes(): Record<string, Guide> {
     const guides = {
         '12649': {
-            a: IS_TROPHY_GUIDE,
-            u: [],
+            attr: IS_TROPHY_GUIDE,
+            authors: [],
             d: 2,
-            r: [],
-            n: 'I Am A Trophy Guide',
+            rating: [],
+            src: 0,
+            title: 'I Am A Trophy Guide',
         },
         '13383': {
-            a: 0,
-            u: [],
+            attr: 0,
+            authors: [],
             d: 1,
-            r: [],
-            n: 'I Am A Walkthrough',
+            rating: [],
+            src: 0,
+            title: 'I Am A Walkthrough',
         },
     };
 
@@ -366,11 +364,12 @@ function getSampleGuideDataForOrder(): Record<string, Guide> {
             const rating = letter === 'Z' ? null : i + 1;
 
             gz[letter] = {
-                a: 0,
-                u: [],
+                attr: 0,
+                authors: [],
                 d: i + 1,
-                r: [rating, rating, rating],
-                n: `${letter} Guide`,
+                rating: [rating, rating, rating],
+                src: 0,
+                title: `${letter} Guide`,
             };
             return gz;
         }, {});
@@ -408,11 +407,12 @@ function getSampleGuideDataForRatingsAndAttributes(index?: number) {
         }
 
         guides[i] = {
-            a: attributes[i.toString()] ?? 0,
-            u: [],
+            attr: attributes[i.toString()] ?? 0,
+            authors: [],
             d: 0,
-            r: rating,
-            n: `Rating ${i}`,
+            rating,
+            src: 0,
+            title: `Rating ${i}`,
         };
     };
 

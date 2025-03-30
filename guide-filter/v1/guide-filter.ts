@@ -1,9 +1,7 @@
-import type { Guide } from '../types/guides-v2.d.ts';
+import type { Guide } from '../../types/guides-v1.d.ts';
 import {
     SOURCE_PSNP,
     SOURCE_KNOEF,
-    SOURCE_PLATGET,
-    SOURCE_PLAYSTATIONTROPHIES,
     SOURCE_POWERPYX,
     IS_TROPHY_GUIDE,
     IS_DLC,
@@ -16,8 +14,8 @@ import {
     HAS_BUGGY_TROPHIES,
     HAS_ONLINE_TROPHIES,
     HAS_MISSABLE_TROPHIES,
-} from '../types/attributes-v2';
-import { tokenParser } from './token-parser';
+} from '../../types/attributes-v1';
+import { tokenParser } from '../token-parser';
 
 export function filter(guides: Record<string, Guide>, searchText: string): (Guide & { id: string })[] {
     const tokens = new tokenParser().parse(searchText, [
@@ -48,7 +46,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             // - so quit (return false to filter) if something is amiss
 
             // use leftOverTerms to search title
-            if (tokens.leftOverTerms && g.n.toLowerCase().includes(tokens.leftOverTerms.toLowerCase()) === false) {
+            if (tokens.leftOverTerms && g.title.toLowerCase().includes(tokens.leftOverTerms.toLowerCase()) === false) {
                 return false;
             }
 
@@ -92,7 +90,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
                 const authors = tokens['author'].split(',');
 
                 // if they provided a list, they all need to match (every instead of some)
-                if (authors.every((a: string) => g.u.some(b => b.toLowerCase().includes(a.toLowerCase()))) === false) {
+                if (authors.every((a: string) => g.authors.some(b => b.toLowerCase().includes(a.toLowerCase()))) === false) {
                     return false;
                 }
             }
@@ -123,46 +121,38 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             // platinum token
             if (tokens['platinum']) {
                 // want platinum but there isn't one? bad
-                if (tokens['platinum'].toLowerCase() === 'yes' && (!g.t || g.t[0] === 0)) {
+                if (tokens['platinum'].toLowerCase() === 'yes' && (!g.trophies || g.trophies[0] === 0)) {
                     return false;
                 }
 
                 // don't want platinum but there is one? bad
-                if (tokens['platinum'].toLowerCase() === 'no' && g.t && g.t[0] === 1) {
+                if (tokens['platinum'].toLowerCase() === 'no' && g.trophies && g.trophies[0] === 1) {
                     return false;
                 }
             }
 
             // src token
             if (tokens['src']) {
-                if (tokens['src'].toLowerCase() === 'knoef' && (g.a & SOURCE_KNOEF) === 0) {
+                if (tokens['src'].toLowerCase() === 'knoef' && g.src !== SOURCE_KNOEF) {
                     return false;
                 }
 
-                if (tokens['src'].toLowerCase() === 'platget' && (g.a & SOURCE_PLATGET) === 0) {
+                if (tokens['src'].toLowerCase() === 'powerpyx' && g.src !== SOURCE_POWERPYX) {
                     return false;
                 }
 
-                if (tokens['src'].toLowerCase() === 'powerpyx' && (g.a & SOURCE_POWERPYX) === 0) {
-                    return false;
-                }
-
-                if (tokens['src'].toLowerCase() === 'pst' && (g.a & SOURCE_PLAYSTATIONTROPHIES) === 0) {
-                    return false;
-                }
-
-                if (tokens['src'].toLowerCase() === 'psnp' && (g.a & SOURCE_PSNP) === 0) {
+                if (tokens['src'].toLowerCase() === 'psnp' && g.src !== SOURCE_PSNP) {
                     return false;
                 }
             }
 
             // type token
             if (tokens['type']) {
-                if (tokens['type'].toLowerCase() === 'trophy-guide' && (g.a & IS_TROPHY_GUIDE) === 0) {
+                if (tokens['type'].toLowerCase() === 'trophy-guide' && (g.attr & IS_TROPHY_GUIDE) === 0) {
                     return false;
                 }
 
-                if (tokens['type'].toLowerCase() === 'guide' && (g.a & IS_TROPHY_GUIDE) !== 0) {
+                if (tokens['type'].toLowerCase() === 'guide' && (g.attr & IS_TROPHY_GUIDE) !== 0) {
                     return false;
                 }
             }
@@ -171,9 +161,9 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             if (tokens['trophies']) {
                 const tokenValue = tokens['trophies'];
                 const desiredTrophyCount = Number(tokenValue.replace(/<|>/, ''));
-                const guideTrophyCount = g.t ? g.t.reduce((p, c) => p + c, 0) : 0;
+                const guideTrophyCount = g.trophies ? g.trophies.reduce((p, c) => p + c, 0) : 0;
 
-                if (!g.t) {
+                if (!g.trophies) {
                     // if the guide doesn't even have trophies, don't include it
                     return false;
                 }
@@ -211,7 +201,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
 
             switch (orderBy) {
                 case 'title':
-                    return a.n.localeCompare(b.n);
+                    return a.title.localeCompare(b.title);
                 case 'difficulty':
                     return compareRatingForSorting(0, a, b, reverse ? 0 : 9999);
                 case 'playthroughs':
@@ -237,22 +227,22 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
 // TODO its own file? its own tests?
 function buildPlatformList(guide: Guide) {
     let platforms = [];
-    if (guide.a & PLATFORM_PS3) {
+    if (guide.attr & PLATFORM_PS3) {
         platforms.push('ps3');
     }
-    if (guide.a & PLATFORM_PS4) {
+    if (guide.attr & PLATFORM_PS4) {
         platforms.push('ps4');
     }
-    if (guide.a & PLATFORM_PS5) {
+    if (guide.attr & PLATFORM_PS5) {
         platforms.push('ps5');
     }
-    if (guide.a & PLATFORM_PC) {
+    if (guide.attr & PLATFORM_PC) {
         platforms.push('pc');
     }
-    if (guide.a & PLATFORM_VITA) {
+    if (guide.attr & PLATFORM_VITA) {
         platforms.push('vita');
     }
-    if (guide.a & PLATFORM_VR) {
+    if (guide.attr & PLATFORM_VR) {
         platforms.push('vr');
     }
     return platforms;
@@ -264,19 +254,19 @@ function compareRatingForFiltering(index: number, tokenValue: string, guide: Gui
 
     if (tokenValue.startsWith('>')) {
         // if difficulty starts with ">" find guides with higher difficulty
-        if (!guide.r || !guide.r[index] || guide.r[index] <= difficultyNumber) {
+        if (!guide.rating || !guide.rating[index] || guide.rating[index] <= difficultyNumber) {
             return false;
         }
     }
     else if (tokenValue.startsWith('<')) {
         // if difficulty starts with "<" find guides with lower difficulty
-        if (!guide.r || !guide.r[index] || guide.r[index] >= difficultyNumber) {
+        if (!guide.rating || !guide.rating[index] || guide.rating[index] >= difficultyNumber) {
             return false;
         }
     }
     else if (!isNaN(difficultyNumber)) {
         // if difficulty is a number, find perfect matches
-        if (guide.r[index] !== difficultyNumber) {
+        if (guide.rating[index] !== difficultyNumber) {
             return false;
         }
     }
@@ -286,18 +276,18 @@ function compareRatingForFiltering(index: number, tokenValue: string, guide: Gui
 
 // TODO its own file? its own tests?
 function compareRatingForSorting(index: number, a: Guide, b: Guide, defaultValue: number) {
-    const valueA = a.r && a.r[index] ? a.r[index] : defaultValue;
-    const valueB = b.r && b.r[index] ? b.r[index] : defaultValue;
+    const valueA = a.rating && a.rating[index] ? a.rating[index] : defaultValue;
+    const valueB = b.rating && b.rating[index] ? b.rating[index] : defaultValue;
     return valueA - valueB;
 }
 
 // TODO its own file? its own tests?
 function compareYesNoAttributeForFiltering(tokenValue: string, attribute: number, guide: Guide) {
-    if (tokenValue.toLowerCase() === 'yes' && (guide.a & attribute) === 0) {
+    if (tokenValue.toLowerCase() === 'yes' && (guide.attr & attribute) === 0) {
         return false;
     }
 
-    if (tokenValue.toLowerCase() === 'no' && (guide.a & attribute) !== 0) {
+    if (tokenValue.toLowerCase() === 'no' && (guide.attr & attribute) !== 0) {
         return false;
     }
 
