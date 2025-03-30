@@ -14,6 +14,8 @@ PSNProfiles gameIds mapped to single preferred guide:
 - The `attr` property is further explained in the Attributes section below.
 - The `path` property is provided when the source is not PSNProfiles. It can be combined with the appropriate root URL to access the guide.
   - When `.src === SOURCE_KNOEF`, the URL is `https://knoef.info/${path}`
+  - When `.src === SOURCE_PLATGET`, the URL is `https://www.platget.com/${path}`
+  - When `.src === SOURCE_PLAYSTATIONTROPHIES`, the URL is `https://www.playstationtrophies.org/game/${path}`
   - When `.src === SOURCE_POWERPYX`, the URL is `https://powerpyx.com/${path}`
 - The `rating` property is as follows: `[difficulty, playthroughs, hours]`.
   - Some sources do not provide this information, so a -1 will be provided for unknown values.
@@ -30,24 +32,7 @@ See explanations above for details of key properties.
 
 Attributes are used to reduce size of JSON. They are bitwise flags that can be used to filter guides.
 
-```
-declare const IS_TROPHY_GUIDE = 1;
-declare const IS_DLC = 2;
-declare const PLATFORM_PC = 512;
-declare const PLATFORM_PS3 = 4;
-declare const PLATFORM_PS4 = 8;
-declare const PLATFORM_PS5 = 16;
-declare const PLATFORM_VITA = 32;
-declare const PLATFORM_VR = 64;
-declare const HAS_BUGGY_TROPHIES = 128;
-declare const HAS_ONLINE_TROPHIES = 256;
-declare const HAS_MISSABLE_TROPHIES = 1024;
-declare const SOURCE_PSNP = 2048;
-declare const SOURCE_KNOEF = 4096;
-declare const SOURCE_POWERPYX = 8192;
-declare const SOURCE_PLATGET = 16384;
-declare const SOURCE_PST = 32768;
-```
+See `types/attributes-v2.ts` for definitions.
 
 They can be used as follows:
 
