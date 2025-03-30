@@ -4,15 +4,9 @@ See `/types` for schema explanation.
 
 ## JSON
 
-### games-psnp-only-v1.min.json
+### games-v2.min.json
 
-PSNProfiles gameIds mapped to featured guideId (or assumed to be featured guideId via stacks).
-- The `attr` property is further explained in the Attributes section below.
-- The `rating` property is as follows: `[difficulty, playthroughs, hours]`.
-
-### games-v1.min.json
-
-PSNProfiles gameIds mapped to single preffered guide:
+PSNProfiles gameIds mapped to single preferred guide:
 1. Featured guide on PSNProfiles game page
 2. PowerPyx Guide to fill in PSNProfiles gaps
 3. Knoef Guide to further fill in gaps
@@ -26,21 +20,11 @@ PSNProfiles gameIds mapped to single preffered guide:
 
 See Attributes below for an explanation of the `attr` property.
 
-### guides.min.json
+### guides-v2.min.json
 
-All guides indexed acrossed all sources with pointers to PSNProfiles gameIds.
+All guides indexed across all sources with pointers to PSNProfiles gameIds.
 
 See explanations above for details of key properties.
-
-## Source
-
-We are currently indexing guides from 3 sources.  The source property is used to identify the source of the guide.
-
-```
-declare const SOURCE_PSNP = 1;
-declare const SOURCE_KNOEF = 2;
-declare const SOURCE_POWERPYX = 3;
-```
 
 ## Attributes
 
@@ -58,6 +42,11 @@ declare const PLATFORM_VR = 64;
 declare const HAS_BUGGY_TROPHIES = 128;
 declare const HAS_ONLINE_TROPHIES = 256;
 declare const HAS_MISSABLE_TROPHIES = 1024;
+declare const SOURCE_PSNP = 2048;
+declare const SOURCE_KNOEF = 4096;
+declare const SOURCE_POWERPYX = 8192;
+declare const SOURCE_PLATGET = 16384;
+declare const SOURCE_PST = 32768;
 ```
 
 They can be used as follows:
