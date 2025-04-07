@@ -6,21 +6,23 @@ See `/types` for schema explanation.
 
 ### games-v2.min.json
 
-PSNProfiles gameIds mapped to single preferred guide:
-1. Featured guide on PSNProfiles game page
-2. PowerPyx Guide to fill in PSNProfiles gaps
-3. Knoef Guide to further fill in gaps
+PSNProfiles gameIds mapped to the preferred guide:
+1. Featured guide on PSNProfiles game page (chosen at random by PSNProfiles)
+1. PowerPyx Guide to fill in PSNProfiles gaps
+1. PlayStation Trophies Guide to further fill in gaps
+1. PlatGet Guide to further fill in gaps
+1. Knoef Guide to further fill in gaps
 
-- The `attr` property is further explained in the Attributes section below.
-- The `path` property is provided when the source is not PSNProfiles. It can be combined with the appropriate root URL to access the guide.
-  - When `.src === SOURCE_KNOEF`, the URL is `https://knoef.info/${path}`
-  - When `.src === SOURCE_PLATGET`, the URL is `https://www.platget.com/${path}`
-  - When `.src === SOURCE_PLAYSTATIONTROPHIES`, the URL is `https://www.playstationtrophies.org/game/${path}`
-  - When `.src === SOURCE_POWERPYX`, the URL is `https://powerpyx.com/${path}`
-- The `rating` property is as follows: `[difficulty, playthroughs, hours]`.
+- The `a` property is further explained in the Attributes section below.
+- The `p` property is provided when the source is not PSNProfiles. It can be combined with the appropriate root URL to access the guide.
+  - When `.a & SOURCE_KNOEF`, the URL is `https://knoef.info/${path}`
+  - When `.a & SOURCE_PLATGET`, the URL is `https://www.platget.com/${path}`
+  - When `.a & SOURCE_PLAYSTATIONTROPHIES`, the URL is `https://www.playstationtrophies.org/game/${path}`
+  - When `.a & SOURCE_POWERPYX`, the URL is `https://powerpyx.com/${path}`
+- The `r` property is as follows: `[difficulty, playthroughs, hours]`.
   - Some sources do not provide this information, so a -1 will be provided for unknown values.
 
-See Attributes below for an explanation of the `attr` property.
+See Attributes below for an explanation of the `a` property.
 
 ### guides-v2.min.json
 
