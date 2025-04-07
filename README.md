@@ -6,7 +6,9 @@ See `/types` for schema explanation.
 
 ### games-v2.min.json
 
-PSNProfiles gameIds mapped to the preferred guide:
+Data maps to type `GameToGuideMap` in `./types/games-v2.d.ts`.
+
+Thie file maps PSNProfiles gameIds to a preferred guide:
 1. Featured guide on PSNProfiles game page (chosen at random by PSNProfiles)
 1. PowerPyx Guide to fill in PSNProfiles gaps
 1. PlayStation Trophies Guide to further fill in gaps
@@ -25,6 +27,8 @@ PSNProfiles gameIds mapped to the preferred guide:
 See Attributes below for an explanation of the `a` property.
 
 ### guides-v2.min.json
+
+Data maps to type `GuideList` in `./types/guides-v2.d.ts`.
 
 All guides indexed across all sources with pointers to PSNProfiles gameIds.
 

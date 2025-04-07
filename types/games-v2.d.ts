@@ -4,8 +4,7 @@ export interface Guide {
     r: number[] // rating -- [difficulty, playthroughs, hours]
 }
 
-export interface GameMap {
-    games: Record<string, number>
-    guides: Record<string, Guide>
+export interface GameToGuideMap {
+    games: Record<string, Guide>
     processed: number
 }
