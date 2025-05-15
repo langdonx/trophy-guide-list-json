@@ -41,6 +41,11 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
     const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? 'published';
     const reverse = tokens.order?.startsWith('-') ?? true;
 
+    const cleanedUpTerms = tokens.leftOverTerms.toLowerCase()
+        .replace(/[-:,.]/g, ' ')
+        .replace(/  /g, ' ')
+        .trim();
+
     const result = Object.entries(guides)
         .filter(([_, g]) => {
             // the general strategy here:
@@ -48,8 +53,15 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             // - so quit (return false to filter) if something is amiss
 
             // use leftOverTerms to search title
-            if (tokens.leftOverTerms && g.n.toLowerCase().includes(tokens.leftOverTerms.toLowerCase()) === false) {
-                return false;
+            if (tokens.leftOverTerms) {
+                const name = g.n.toLowerCase()
+                    .replace(/[-:,]/g, ' ')
+                    .replace(/  /g, ' ')
+                    .trim();
+
+                if (name.includes(cleanedUpTerms) === false) {
+                    return false;
+                }
             }
 
             // difficulty token

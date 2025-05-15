@@ -69,6 +69,8 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Partial Match', 'Rules & Disputes', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Leaderboard Rules & Disputes']],
         ['Partial Match (Case Insensitive)', 'psnp', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide', 'PSNProfiles: Leaderboard Rules & Disputes']],
         ['Colons in Game Names', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+        ['Punctuation Matches', 'Doom: The Dark Ages, Inc.', sampleGuideDataForTextAndAuthor, ['Doom The Dark Ages Inc']],
+        ['Punctuation Matches Reverse', 'Ratchet & Clank Full Frontal Assault Trophy Guide', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
     ];
     describe('Basic Search', () => test.each(basicSearchScenarios)('%s - `%s`', genericTest));
 
@@ -201,10 +203,10 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     // trophies:
     const trophiesScenarios = [
         ['Equals', 'trophies:30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Witchcrafty Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Equals', 'trophies:<30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+        ['Equals', 'trophies:<30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Doom The Dark Ages Inc']],
         ['Equals', 'trophies:>30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Pato Box Trophy Guide']],
-        ['Empty', 'hours:', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide']],
-        ['Garbage', 'hours:garbage', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide']],
+        ['Empty', 'hours:', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide', 'Doom The Dark Ages Inc']],
+        ['Garbage', 'hours:garbage', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide', 'Doom The Dark Ages Inc']],
     ];
     describe('Trophies Search', () => test.each(trophiesScenarios)('%s - `%s`', genericTest));
 
@@ -264,6 +266,14 @@ function getSampleGuideDataForTextAndAuthorAndTrophies(): Record<string, Guide> 
             r: [],
             n: 'Rogue Legacy Trophy Guide',
             t: [1, 6, 11, 12],
+        },
+        'fuck/knows': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Doom The Dark Ages Inc',
+            t: [1, 6, 11, 0],
         },
     };
 }
