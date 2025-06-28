@@ -1,0 +1,160 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div id="app">
+        <main @click="onAppClick()" class="d-flex flex-column p-3">
+
+            <!-- search form -->
+            <form @submit.prevent="onFormSubmit()">
+                <fieldset :disabled="componentState.loading">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <input class="form-control" type="text" placeholder="Search for a guide..." v-model="componentState.search.text">
+                        </div>
+                        <div class="col">
+                            <div class="btn-group">
+                                <button class="btn btn-primary">
+                                    Search {{ componentState.guideIds.length.toLocaleString() }} Guides
+                                </button>
+                                <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" @click.stop="componentState.dropDownExamples = !componentState.dropDownExamples">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-examples" :class="{ 'd-block': componentState.dropDownExamples }">
+                                    <div v-for="example in searchExamples">
+                                        <h6 v-if="example.isHeader" class="dropdown-header">{{ example.title }}</h6>
+                                        <div v-if="example.title === '-'" class="dropdown-divider"></div>
+                                        <button v-if="!example.isHeader && example.title !== '-'" type="button" class="dropdown-item" @click="onSearchLinkClick(example.searchText)">{{ example.title }}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+            <!-- results table header -->
+            <div class="d-flex heading">
+                <div class="flex-grow-1 text">
+                    <span v-if="!componentState.loading">Guides ({{ componentState.search.lowerBound + 1 }}-{{ componentState.search.upperBound }} of {{ componentState.search.resultsCount.toLocaleString() }})</span>
+                    <span v-if="componentState.loading">Loading...</span>
+                </div>
+                <div>
+                    <div class="btn-group">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-secondary btn-sm btn-order dropdown-toggle px-4" @click.stop="componentState.dropDownOrder = !componentState.dropDownOrder">
+                                Order ({{ componentState.search.orderBy }})
+                            </button>
+                            <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton1" :class="{ 'd-block': componentState.dropDownOrder }">
+                                <li v-for="orderBy in ['Title', '-', 'Difficulty', 'Playthroughs', 'Hours', '-', 'Platinum Rate', 'Completion Rate', '-', 'Published']">
+                                    <div class="dropdown-divider" v-if="orderBy === '-'"></div>
+                                    <button v-if="orderBy !== '-'" type="button" class="dropdown-item" @click="onOrderClick(orderBy)" :class="{ 'text-info': componentState.search.orderBy === orderBy }">
+                                        {{ orderBy }}
+                                        <i class="fa ms-2" :class="{ 'fa-arrow-up': componentState.search.orderBy !== orderBy || !componentState.search.orderByReverse, 'fa-arrow-down': componentState.search.orderBy === orderBy && componentState.search.orderByReverse  }"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3 table-container">
+                <table class="table table-bordered table-striped mb-0">
+                    <tbody>
+                        <tr v-if="componentState.loading">
+                            <td></td>
+                        </tr>
+                        <tr v-for="guide in componentState.search.results">
+                            <td>
+                                <div class="d-flex flex-row">
+                                    <div class="flex-grow-0 flex-shrink-1 d-flex flex-column  pe-2">
+                                        <img title="PSNProfiles" v-if="guide.src === 1"
+                                            src="data:image/png;base64,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"
+                                            alt="" />
+                                        <img title="PowerPyx" v-if="guide.src === 3"
+                                            src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wgARCAAgACADASIAAhEBAxEB/8QAGAAAAwEBAAAAAAAAAAAAAAAABAUGBwL/xAAXAQADAQAAAAAAAAAAAAAAAAAAAQIF/9oADAMBAAIQAxAAAAFUfXt9eM5A08VCIOG7a0+SQA2f/8QAGhAAAwEBAQEAAAAAAAAAAAAAAgMEBQEAEf/aAAgBAQABBQKbNe8CyqFjzKoYNOa9AZPWBlj2gkqJwxXdcWXO7oYRa1LAqpJGbXq0ULGs+ByjxWGQk377/8QAFhEBAQEAAAAAAAAAAAAAAAAAABES/9oACAEDAQE/Acsqr//EABwRAAICAgMAAAAAAAAAAAAAAAECAAQRIQMSYf/aAAgBAgEBPwF7jhiNQXH7Y9iqudxOMCf/xAAlEAACAQMDAgcAAAAAAAAAAAABAgMAERIQIVETFAQxQUJSYcH/2gAIAQEABj8CzjiZl5rJoWAFBlhYg1lJCyrzQMIUvltlUvcIijHa1Q9BUZre6p+5VFb0xrIGxD/tFWluD9V4SRGs3NdOSW68WrDNsfjfbQKXYqPIX0//xAAfEAEAAgICAgMAAAAAAAAAAAABABEhMUFhUaFxscH/2gAIAQEAAT8hGaIoRDv01qEXaxDc4pJYxLTKgVDmCt0Zd4b5g6w0VYjLwgsVZ+zG86Jw1iJx0lC/UoLTgfDGiXy0H1Oy7k9J2TdXBwJ50//aAAwDAQACAAMAAAAQM6PY/8QAFhEBAQEAAAAAAAAAAAAAAAAAAQAR/9oACAEDAQE/EASMtSr/xAAaEQEBAAMBAQAAAAAAAAAAAAABEQAhMUFR/9oACAECAQE/EDQQM7vzzJiCad32cxjQNbzO+C1bPrc//8QAHRABAAMBAQEAAwAAAAAAAAAAAQARITFBUWFxkf/aAAgBAQABPxBsOUYlOwPSW+R9ZVCkyh9iYiRYy8t8jULqRb9Nq/Z621IHRr8QnBhrKDppvIcNAWCwrruv4SwfoOChlS6CpPlgY8M9oNWbjjG1YAGpy6FyoRbbUe3qrihHdIJv6xaIto//2Q=="
+                                            alt="" />
+                                        <img title="Knoef" v-if="guide.src === 2"
+                                            src="data:image/webp;base64,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"
+                                            alt="" />
+                                    </div>
+                                    <div class="d-flex flex-column flex-grow-1">
+                                        <div>
+                                            <a :href="guide.url" target="_blank">
+                                                {{ guide.title }}
+                                            </a>
+                                        </div>
+                                        <div class="text-muted small">
+                                            by
+                                            {{ guide.authors }}
+                                            • published on {{ guide.publishedFormatted }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            {{ guide.trophyCount}} Trophies
+                                            • {{ guide.trophyPoints.toLocaleString() }} Points
+                                            <span v-if="guide.isOnline || guide.isBuggy">
+                                                •
+                                                <span v-if="guide.isOnline" class="tag online">ONLINE</span>
+                                                <span v-if="guide.isBuggy" class="tag buggy">BUGGY</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-0 flex-shrink-1 d-flex flex-column justify-content-center" v-if="guide.isDlc">
+                                        <span class="tag dlc">DLC</span>
+                                    </div>
+
+                                    <div class="flex-grow-0 flex-shrink-1 d-flex flex-column justify-content-center">
+                                        <span v-for="platform in guide.platforms" class="tag platform" :class="platform">
+                                            {{ platform }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="align-middle ratings text-center">
+                                <div class="text-center text-muted" v-if="!guide.isTrophyGuide">
+                                    <em>
+                                        walkthrough
+                                    </em>
+                                </div>
+                                <div class="d-flex justify-content-center" v-if="guide.isTrophyGuide">
+                                    <span class="stats" :class="guide.difficultyClass">
+                                        {{ guide.difficulty }}/10</span>
+                                    <span class="stats" :class="guide.playthroughsClass">
+                                        {{ guide.playthroughs || '?' }}</span>
+                                    <span class="stats" :class="guide.hoursClass">
+                                        {{ guide.hours }}h</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav aria-label="Page navigation example">
+                <ul class="pagination m-0">
+                    <li class="page-item">
+                        <button class="page-link" :class="{ disabled: componentState.search.page === 1 }" @click="() => onPageClick(componentState.search.page - 1)">Previous</button>
+                    </li>
+                    <li class="page-item" v-for="index in componentState.search.pageCount">
+                        <button class="page-link" :class="{ active: componentState.search.page === index }" @click="() => onPageClick(index)">{{ index }}</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" :class="{ disabled: componentState.search.page === componentState.search.pageCount }" @click="() => onPageClick(componentState.search.page + 1)">Next</button>
+                    </li>
+                </ul>
+            </nav>
+
+        </main>
+    </div>
+</body>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="index.js"></script>
+
+</html>
