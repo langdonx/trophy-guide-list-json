@@ -1,0 +1,226 @@
+body {}
+
+main {
+  height: 100vh;
+}
+
+main>div:nth-of-type(2) {
+  overflow-y: auto;
+}
+
+.btn-order {
+  width: 240px;
+}
+
+.table-container {
+  border-bottom: 1px solid var(--bs-border-color);
+  border-top: 1px solid var(--bs-border-color);
+}
+
+table tbody tr:first-child {
+  border-top: 0;
+}
+
+table tbody tr:last-child{
+  border-bottom: 0;
+}
+
+.dropdown-menu-examples {
+  left: 164px;
+  top: 41px;
+}
+
+.heading {
+  border-width: var(--bs-border-width) 0;
+  border-color: var(--bs-table-border-color);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-bottom: 0;
+  padding: 0.5rem;
+}
+
+.heading .text {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.ratings {
+  width: calc(85px * 3 + 0.75rem * 4);
+}
+
+.tag {
+  text-align: center;
+  display: inline-block;
+  border-radius: 2px;
+  cursor: default;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: #fff;
+}
+
+.tag.dlc {
+  font-size: 0.8rem;
+  width: 38px;
+  float: none;
+  margin: 1px !important;
+  margin-right: 1rem !important;
+  font-family: inherit;
+  background: purple;
+}
+
+.tag.buggy {
+  font-size: 10px;
+  color: white;
+  padding: 1px 2px;
+  border-radius: 2px;
+  background: #3a87ad;
+}
+
+.tag.online {
+  background: #b94a48;
+  font-size: 10px;
+  color: white;
+  padding: 1px 2px;
+  margin-right: 0.25rem;
+  border-radius: 2px;
+}
+
+.tag.platform {
+  font-size: 0.8rem;
+  width: 38px;
+  float: none;
+  margin: 1px !important;
+  font-family: inherit;
+}
+
+.tag.platform.Vita {
+  background: #4a89ca;
+}
+
+.tag.platform.PS3 {
+  background: #266eb7;
+}
+
+.tag.platform.PS4 {
+  background: #1b5c9e;
+}
+
+.tag.platform.PS5 {
+  color: #1b5c9e !important;
+  background: white !important;
+  border: 1px solid #1b5c9e !important;
+}
+
+.stats {
+  border-radius: 2px;
+  color: white;
+  font-size: 20px;
+  padding: 0.5rem;
+  margin-right: 0.75rem;
+  width: 85px;
+}
+
+.stats:last-child {
+  margin-right: 0;
+}
+
+.stats.d0 {
+  background-color: #999;
+}
+
+/* 1 - 9
+1 https://psnprofiles.com/guide/8642-north-trophy-guide
+9 https://psnprofiles.com/guide/15795-happys-humble-burger-farm-trophy-guide */
+.stats.d1 {
+  background-color: #488846;
+}
+
+/* 10 - 19
+10 https://psnprofiles.com/guide/11377-arise-trophy-guide
+18 https://psnprofiles.com/guide/7698-word-search-by-powgi-trophy-guide */
+.stats.d2 {
+  background-color: #618839;
+}
+
+/* 20 - 29
+20 https://psnprofiles.com/guide/2-xcom-enemy-within-trophy-guide
+28 https://psnprofiles.com/guide/14334-the-stanley-parable-ultra-deluxe-trophy-guide */
+.stats.d3 {
+  background-color: #898825;
+}
+
+/* 30 - 39
+30 https://psnprofiles.com/guide/698-motorstorm-apocalypse-trophy-guide
+38 https://psnprofiles.com/guide/4209-time-and-eternity-trophy-guide */
+.stats.d4 {
+  background-color: #b38811;
+}
+
+/* 40 - 49
+40 https://psnprofiles.com/guide/13286-just-dance-2021-trophy-guide
+45 https://psnprofiles.com/guide/13296-windbound-trophy-guide */
+.stats.d5 {
+  background-color: #d38603;
+}
+
+/* 50 - 59
+50 https://psnprofiles.com/guide/14292-epic-chef-trophy-guide
+55 https://psnprofiles.com/guide/17716-dysmantle-trophy-guide */
+.stats.d6 {
+  background-color: #dd7e04;
+}
+
+/* 60 - 69
+60 https://psnprofiles.com/guide/16726-age-of-wonders-planetfall-star-kings-dlc-trophy-guide
+65 https://psnprofiles.com/guide/11649-teenage-mutant-ninja-turtles-mutants-in-manhattan-trophy-guide */
+.stats.d7 {
+  background-color: #dc7111;
+}
+
+/* 70 - 79
+70 https://psnprofiles.com/guide/7438-uncharted-4-a-thiefs-end-uncharted-4-survival-dlc-trophy-guide
+75 https://psnprofiles.com/guide/6196-atelier-meruru-plus-the-apprentice-of-arland-trophy-guide */
+.stats.d8 {
+  background-color: #d16226;
+}
+
+/* 80 - 89
+80 https://psnprofiles.com/guide/148-medal-of-honor-warfighter-trophy-guide */
+.stats.d9 {
+  background-color: #c2543a;
+}
+
+/* 90 - 99
+90 https://psnprofiles.com/guide/13480-ninja-gaiden-%CF%83-trophy-guide */
+.stats.d10,
+.stats.d11 {
+  background-color: #ba4b47;
+}
+
+.stats.p0 {
+  background-color: #999;
+}
+
+/* https://psnprofiles.com/guide/15581-steelrising-cagliostros-secrets-dlc-trophy-guide */
+.stats.p1 {
+  background-color: #488846;
+}
+
+/* 2 https://psnprofiles.com/guide/2359-tiny-troopers-joint-ops-trophy-guide */
+.stats.p2 {
+  background-color: #a58817;
+}
+
+/* 3 https://psnprofiles.com/guide/15346-bright-memory-infinite-trophy-guide */
+.stats.p3 {
+  background-color: #d88203;
+}
+
+/* 4 https://psnprofiles.com/guide/2230-danganronpa-trigger-happy-havoc-trophy-guide */
+.stats.p4 {
+  background-color: #d96d17;
+}
+
+/* 5 https://psnprofiles.com/guide/4677-furi-trophy-guide */
+.stats.p5 {
+  background-color: #c2533b;
+}
