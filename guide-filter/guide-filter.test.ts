@@ -19,12 +19,15 @@ import {
     HAS_MISSABLE_TROPHIES,
 } from '../types/attributes-v2';
 
-const sampleGuideDataForTextAndAuthor = getSampleGuideDataForTextAndAuthorAndTrophies();
+const sampleGuideDataForAuthor = getSampleGuideDataForAuthor();
 const sampleGuideDataForDlcAndPlatinum = getSampleGuideDataForDlcAndPlatinum();
-const sampleGuideDataForSource = getSampleGuideDataForSource();
-const sampleGuideDataForType = getSampleGuideDataForTypeAndAttributes();
 const sampleGuideDataForOrder = getSampleGuideDataForOrder();
+const sampleGuideDataForPlatform = getSampleGuideDataForPlatform();
 const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAttributes();
+const sampleGuideDataForSource = getSampleGuideDataForSource();
+const sampleGuideDataForText = getSampleGuideDataForText();
+const sampleGuideDataForTrophies = getSampleGuideDataForTrophies();
+const sampleGuideDataForType = getSampleGuideDataForTypeAndAttributes();
 
 // TODO order by multiple fields, e.g. hardest game that is the shortest -- order:-difficulty,hours
 
@@ -64,25 +67,27 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     });
 
     // raw text
-    const basicSearchScenarios = [
-        ['Full Match', 'PSNProfiles: Writing a Guide', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide']],
-        ['Partial Match', 'Rules & Disputes', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Leaderboard Rules & Disputes']],
-        ['Partial Match (Case Insensitive)', 'psnp', sampleGuideDataForTextAndAuthor, ['PSNProfiles: Writing a Guide', 'PSNProfiles: Leaderboard Rules & Disputes']],
-        ['Colons in Game Names', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
-        ['Punctuation Matches', 'Doom: The Dark Ages, Inc.', sampleGuideDataForTextAndAuthor, ['Doom The Dark Ages Inc']],
-        ['Punctuation Matches Reverse', 'Ratchet & Clank Full Frontal Assault Trophy Guide', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+    const textScenarios = [
+        ['Full Match', 'PSNProfiles: Writing a Guide', sampleGuideDataForText, ['PSNProfiles: Writing a Guide']],
+        ['Partial Match', 'Rules & Disputes', sampleGuideDataForText, ['PSNProfiles: Leaderboard Rules & Disputes']],
+        ['Partial Match (Case Insensitive)', 'psnp', sampleGuideDataForText, ['PSNProfiles: Writing a Guide', 'PSNProfiles: Leaderboard Rules & Disputes']],
+        ['Colons in Game Names', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', sampleGuideDataForText, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+        ['Punctuation Matches', 'Doom: The Dark Ages, Inc.', sampleGuideDataForText, ['Doom The Dark Ages Inc']],
+        ['Punctuation Matches Reverse', 'Ratchet & Clank Full Frontal Assault Trophy Guide', sampleGuideDataForText, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+        ['Quotations', 'Onimusha 2: Samurai’s Destiny Trophy', sampleGuideDataForText, ['Onimusha 2: Samurai\'s Destiny Trophy Guide', 'Onimusha 2: Samurai’s Destiny Trophy Guide & Roadmap']],
+        ['Quotations Reverse', 'Onimusha 2 Samurais', sampleGuideDataForText, ['Onimusha 2: Samurai\'s Destiny Trophy Guide', 'Onimusha 2: Samurai’s Destiny Trophy Guide & Roadmap']],
     ];
-    describe('Basic Search', () => test.each(basicSearchScenarios)('%s - `%s`', genericTest));
+    describe.only('Basic Search', () => test.each(textScenarios)('%s - `%s`', genericTest));
 
     // author:
     const authorScenarios = [
-        ['Full Match', 'author:Michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Full Match (Case Insensitive)', 'author:michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Partial Match', 'author:ichael239', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Multiple', 'author:langdon,Michael2399', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Multiple (Out Of Order)', 'author:Michael2399,langdon', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Multiple (Partial)', 'author:ichael239,angdo', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Multiple (Mismatched)', 'author:HealedFiend13,Michael2399', sampleGuideDataForTextAndAuthor, []],
+        ['Full Match', 'author:Michael2399', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
+        ['Full Match (Case Insensitive)', 'author:michael2399', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
+        ['Partial Match', 'author:ichael239', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple', 'author:langdon,Michael2399', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple (Out Of Order)', 'author:Michael2399,langdon', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple (Partial)', 'author:ichael239,angdo', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
+        ['Multiple (Mismatched)', 'author:HealedFiend13,Michael2399', sampleGuideDataForAuthor, []],
     ];
     describe('Author Search', () => test.each(authorScenarios)('%s - `%s`', genericTest));
 
@@ -159,16 +164,16 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 
     // platform:
     const platformScenarios = [
-        ['Exact', 'platform:ps5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
-        ['Exact (Case Insensitive)', 'platform:PS5', sampleGuideDataForTextAndAuthor, ['Witchcrafty Trophy Guide']],
-        ['Partial (Returns Nothing)', 'platform:ps', sampleGuideDataForTextAndAuthor, []],
-        ['Vita Support', 'platform:vita', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Vita Support (PSV Alias)', 'platform:psv', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Multiple', 'platform:ps3,ps4,psv', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
-        ['Multiple (Out Of Order)', 'platform:psv,ps3,ps4', sampleGuideDataForTextAndAuthor, ['Rogue Legacy Trophy Guide']],
-        ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForTextAndAuthor, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Exclusions (Single)', 'platform:psv,-ps3', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
-        ['Exclusions (Multiple)', 'platform:psv,-ps3,-ps4', sampleGuideDataForTextAndAuthor, ['Pato Box Trophy Guide']],
+        ['Exact', 'platform:ps5', sampleGuideDataForPlatform, ['Witchcrafty Trophy Guide']],
+        ['Exact (Case Insensitive)', 'platform:PS5', sampleGuideDataForPlatform, ['Witchcrafty Trophy Guide']],
+        ['Partial (Returns Nothing)', 'platform:ps', sampleGuideDataForPlatform, []],
+        ['Vita Support', 'platform:vita', sampleGuideDataForPlatform, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Vita Support (PSV Alias)', 'platform:psv', sampleGuideDataForPlatform, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Multiple', 'platform:ps3,ps4,psv', sampleGuideDataForPlatform, ['Rogue Legacy Trophy Guide']],
+        ['Multiple (Out Of Order)', 'platform:psv,ps3,ps4', sampleGuideDataForPlatform, ['Rogue Legacy Trophy Guide']],
+        ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForPlatform, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Exclusions (Single)', 'platform:psv,-ps3', sampleGuideDataForPlatform, ['Pato Box Trophy Guide']],
+        ['Exclusions (Multiple)', 'platform:psv,-ps3,-ps4', sampleGuideDataForPlatform, ['Pato Box Trophy Guide']],
     ];
     describe('Platform Search', () => test.each(platformScenarios)('%s - `%s`', genericTest));
 
@@ -202,11 +207,11 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 
     // trophies:
     const trophiesScenarios = [
-        ['Equals', 'trophies:30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Witchcrafty Trophy Guide', 'Rogue Legacy Trophy Guide']],
-        ['Equals', 'trophies:<30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Doom The Dark Ages Inc']],
-        ['Equals', 'trophies:>30', getSampleGuideDataForTextAndAuthorAndTrophies(), ['Pato Box Trophy Guide']],
-        ['Empty', 'hours:', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide', 'Doom The Dark Ages Inc']],
-        ['Garbage', 'hours:garbage', getSampleGuideDataForTextAndAuthorAndTrophies(), ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide', 'Doom The Dark Ages Inc']],
+        ['Equals', 'trophies:30', sampleGuideDataForTrophies, ['Witchcrafty Trophy Guide', 'Rogue Legacy Trophy Guide']],
+        ['Equals', 'trophies:<30', sampleGuideDataForTrophies, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Doom The Dark Ages Inc']],
+        ['Equals', 'trophies:>30', sampleGuideDataForTrophies, ['Pato Box Trophy Guide']],
+        ['Empty', 'hours:', sampleGuideDataForTrophies, ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide', 'Doom The Dark Ages Inc']],
+        ['Garbage', 'hours:garbage', sampleGuideDataForTrophies, ['PSNProfiles: Writing a Guide', 'Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Pato Box Trophy Guide', 'Witchcrafty Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes', 'Rogue Legacy Trophy Guide', 'Doom The Dark Ages Inc']],
     ];
     describe('Trophies Search', () => test.each(trophiesScenarios)('%s - `%s`', genericTest));
 
@@ -219,7 +224,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
     describe('Type Search', () => test.each(typeScenarios)('%s - `%s`', genericTest));
 })();
 
-function getSampleGuideDataForTextAndAuthorAndTrophies(): Record<string, Guide> {
+function getSampleGuideDataForAuthor(): Record<string, Guide> {
     return {
         '1': {
             a: 0,
@@ -278,6 +283,155 @@ function getSampleGuideDataForTextAndAuthorAndTrophies(): Record<string, Guide> 
     };
 }
 
+function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
+    const guides = {
+        '1': {
+            a: IS_TROPHY_GUIDE,
+            u: [],
+            d: 3,
+            r: [],
+            n: 'I Am A Platinum Trophy Guide',
+            t: [1, 0, 0, 0],
+        },
+        '2': {
+            a: IS_TROPHY_GUIDE,
+            u: [],
+            d: 2,
+            r: [],
+            n: 'I Am A Trophy Guide Without A Platinum',
+            t: [0, 0, 0, 0],
+        },
+        '3': {
+            a: IS_DLC,
+            u: [],
+            d: 1,
+            r: [],
+            n: 'I Am A DLC Guide',
+        },
+    };
+
+    return guides;
+}
+
+function getSampleGuideDataForOrder(): Record<string, Guide> {
+    const guides = ['A', 'D', 'Y', 'Z']
+        .reduce((gz: Record<string, Guide>, letter, i) => {
+            // make Z have no ratings to handle null searching
+            const rating = letter === 'Z' ? null : i + 1;
+
+            gz[letter] = {
+                a: 0,
+                u: [],
+                d: i + 1,
+                r: [rating, rating, rating],
+                n: `${letter} Guide`,
+            };
+            return gz;
+        }, {});
+
+    return guides;
+}
+
+function getSampleGuideDataForPlatform(): Record<string, Guide> {
+    return {
+        '1': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'PSNProfiles: Writing a Guide',
+        },
+        '132': {
+            a: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
+            t: [1, 7, 7, 8],
+        },
+        '15002': {
+            a: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: ['langdon', 'Michael2399'],
+            d: 0,
+            r: [],
+            n: 'Pato Box Trophy Guide',
+            t: [1, 2, 7, 42],
+        },
+        '16557': {
+            a: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            u: ['HealedFiend13', 'langdon'],
+            d: 0,
+            r: [],
+            n: 'Witchcrafty Trophy Guide',
+            t: [1, 7, 6, 16],
+        },
+        '18277': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'PSNProfiles: Leaderboard Rules & Disputes',
+        },
+        '19678': {
+            a: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Rogue Legacy Trophy Guide',
+            t: [1, 6, 11, 12],
+        },
+        'fuck/knows': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Doom The Dark Ages Inc',
+            t: [1, 6, 11, 0],
+        },
+    };
+}
+
+function getSampleGuideDataForRatingsAndAttributes(index?: number) {
+    const guides: Record<string, Guide> = {};
+
+    const attributes = {
+        '1': HAS_BUGGY_TROPHIES,
+        '2': HAS_ONLINE_TROPHIES,
+        '3': HAS_MISSABLE_TROPHIES,
+        '4': HAS_BUGGY_TROPHIES | HAS_ONLINE_TROPHIES,
+        '5': HAS_BUGGY_TROPHIES | HAS_MISSABLE_TROPHIES,
+        '6': HAS_ONLINE_TROPHIES | HAS_MISSABLE_TROPHIES,
+        '7': HAS_BUGGY_TROPHIES | HAS_ONLINE_TROPHIES | HAS_MISSABLE_TROPHIES,
+    };
+
+    for (let i = 1; i <= 10; i++) {
+        // difficulty, playthroughs, hours
+        const rating = [0, 0, 0];
+
+        // if an index wasn't provided, set all ratings the same, but
+        // for test clarity, set ratings differently to avoid bugs
+        // e.g. hours:3 implementation used to be checking playthroughs
+        if (index === undefined) {
+            rating[0] = i;
+            rating[1] = i;
+            rating[2] = i;
+        }
+        else {
+            rating[index] = i;
+        }
+
+        guides[i] = {
+            a: attributes[i.toString()] ?? 0,
+            u: [],
+            d: 0,
+            r: rating,
+            n: `Rating ${i}`,
+        };
+    };
+
+    return guides;
+}
+
 function getSampleGuideDataForSource(): Record<string, Guide> {
     return {
         '1': {
@@ -318,34 +472,138 @@ function getSampleGuideDataForSource(): Record<string, Guide> {
     };
 }
 
-function getSampleGuideDataForDlcAndPlatinum(): Record<string, Guide> {
-    const guides = {
+function getSampleGuideDataForText(): Record<string, Guide> {
+    return {
         '1': {
-            a: IS_TROPHY_GUIDE,
+            a: 0,
             u: [],
-            d: 3,
+            d: 0,
             r: [],
-            n: 'I Am A Platinum Trophy Guide',
-            t: [1, 0, 0, 0],
+            n: 'PSNProfiles: Writing a Guide',
         },
-        '2': {
-            a: IS_TROPHY_GUIDE,
+        '132': {
+            a: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
             u: [],
-            d: 2,
+            d: 0,
             r: [],
-            n: 'I Am A Trophy Guide Without A Platinum',
-            t: [0, 0, 0, 0],
+            n: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
+            t: [1, 7, 7, 8],
         },
-        '3': {
-            a: IS_DLC,
-            u: [],
-            d: 1,
+        '15002': {
+            a: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: ['langdon', 'Michael2399'],
+            d: 0,
             r: [],
-            n: 'I Am A DLC Guide',
+            n: 'Pato Box Trophy Guide',
+            t: [1, 2, 7, 42],
+        },
+        '16557': {
+            a: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            u: ['HealedFiend13', 'langdon'],
+            d: 0,
+            r: [],
+            n: 'Witchcrafty Trophy Guide',
+            t: [1, 7, 6, 16],
+        },
+        '18277': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'PSNProfiles: Leaderboard Rules & Disputes',
+        },
+        '19678': {
+            a: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Rogue Legacy Trophy Guide',
+            t: [1, 6, 11, 12],
+        },
+        'fuck/knows': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Doom The Dark Ages Inc',
+            t: [1, 6, 11, 0],
+        },
+        '22396': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Onimusha 2: Samurai\'s Destiny Trophy Guide',
+            t: [1, 6, 11, 0],
+        },
+        'onimusha-2-samurais-destiny-trophy-guide-roadmap/': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Onimusha 2: Samurai’s Destiny Trophy Guide & Roadmap',
+            t: [1, 6, 11, 0],
         },
     };
+}
 
-    return guides;
+function getSampleGuideDataForTrophies(): Record<string, Guide> {
+    return {
+        '1': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'PSNProfiles: Writing a Guide',
+        },
+        '132': {
+            a: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
+            t: [1, 7, 7, 8],
+        },
+        '15002': {
+            a: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: ['langdon', 'Michael2399'],
+            d: 0,
+            r: [],
+            n: 'Pato Box Trophy Guide',
+            t: [1, 2, 7, 42],
+        },
+        '16557': {
+            a: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            u: ['HealedFiend13', 'langdon'],
+            d: 0,
+            r: [],
+            n: 'Witchcrafty Trophy Guide',
+            t: [1, 7, 6, 16],
+        },
+        '18277': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'PSNProfiles: Leaderboard Rules & Disputes',
+        },
+        '19678': {
+            a: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Rogue Legacy Trophy Guide',
+            t: [1, 6, 11, 12],
+        },
+        'fuck/knows': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [],
+            n: 'Doom The Dark Ages Inc',
+            t: [1, 6, 11, 0],
+        },
+    };
 }
 
 function getSampleGuideDataForTypeAndAttributes(): Record<string, Guide> {
@@ -364,66 +622,6 @@ function getSampleGuideDataForTypeAndAttributes(): Record<string, Guide> {
             r: [],
             n: 'I Am A Walkthrough',
         },
-    };
-
-    return guides;
-}
-
-function getSampleGuideDataForOrder(): Record<string, Guide> {
-    const guides = ['A', 'D', 'Y', 'Z']
-        .reduce((gz: Record<string, Guide>, letter, i) => {
-            // make Z have no ratings to handle null searching
-            const rating = letter === 'Z' ? null : i + 1;
-
-            gz[letter] = {
-                a: 0,
-                u: [],
-                d: i + 1,
-                r: [rating, rating, rating],
-                n: `${letter} Guide`,
-            };
-            return gz;
-        }, {});
-
-    return guides;
-}
-
-function getSampleGuideDataForRatingsAndAttributes(index?: number) {
-    const guides: Record<string, Guide> = {};
-
-    const attributes = {
-        '1': HAS_BUGGY_TROPHIES,
-        '2': HAS_ONLINE_TROPHIES,
-        '3': HAS_MISSABLE_TROPHIES,
-        '4': HAS_BUGGY_TROPHIES | HAS_ONLINE_TROPHIES,
-        '5': HAS_BUGGY_TROPHIES | HAS_MISSABLE_TROPHIES,
-        '6': HAS_ONLINE_TROPHIES | HAS_MISSABLE_TROPHIES,
-        '7': HAS_BUGGY_TROPHIES | HAS_ONLINE_TROPHIES | HAS_MISSABLE_TROPHIES,
-    };
-
-    for (let i = 1; i <= 10; i++) {
-        // difficulty, playthroughs, hours
-        const rating = [0, 0, 0];
-
-        // if an index wasn't provided, set all ratings the same, but
-        // for test clarity, set ratings differently to avoid bugs
-        // e.g. hours:3 implementation used to be checking playthroughs
-        if (index === undefined) {
-            rating[0] = i;
-            rating[1] = i;
-            rating[2] = i;
-        }
-        else {
-            rating[index] = i;
-        }
-
-        guides[i] = {
-            a: attributes[i.toString()] ?? 0,
-            u: [],
-            d: 0,
-            r: rating,
-            n: `Rating ${i}`,
-        };
     };
 
     return guides;
