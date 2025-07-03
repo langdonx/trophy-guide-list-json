@@ -41,10 +41,14 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
     const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? 'published';
     const reverse = tokens.order?.startsWith('-') ?? true;
 
+    const punctuationRegex = /[-:,.’'"“”]/g;
+
     const cleanedUpTerms = tokens.leftOverTerms.toLowerCase()
-        .replace(/[-:,.]/g, ' ')
+        .replace(punctuationRegex, '')
         .replace(/  /g, ' ')
         .trim();
+
+    console.log('cleanedUpTerms', cleanedUpTerms);
 
     const result = Object.entries(guides)
         .filter(([_, g]) => {
@@ -55,7 +59,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             // use leftOverTerms to search title
             if (tokens.leftOverTerms) {
                 const name = g.n.toLowerCase()
-                    .replace(/[-:,]/g, ' ')
+                    .replace(punctuationRegex, '')
                     .replace(/  /g, ' ')
                     .trim();
 

@@ -127,7 +127,7 @@ function initVueApp() {
       onMounted(() => {
         componentState.loading = true;
 
-        fetch('https://langdonx.github.io/trophy-guide-list-json/guides-v1.min.json')
+        fetch('https://langdonx.github.io/trophy-guide-list-json/guides-v2.min.json')
           .then(response => response.json())
           .then(json => {
             componentState.guides = json;
@@ -135,11 +135,14 @@ function initVueApp() {
             componentState.loading = false;
             componentState.search.text = 'order:-published';
 
-            const lastPublished = Object.values(componentState.guides).filter(g => g.src === SOURCE_PSNP).reduce((p, c) => !c.d ? p : Math.max(p, c.d), 0);
+            const lastPublished = Object.values(componentState.guides)
+              .filter(g => g.src === SOURCE_PSNP)
+              .reduce((p, c) => !c.d ? p : Math.max(p, c.d), 0);
 
             console.log({
               lastPublished
             });
+
             search();
           });
 
