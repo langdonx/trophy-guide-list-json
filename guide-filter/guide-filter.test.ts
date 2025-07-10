@@ -22,6 +22,7 @@ import {
 const sampleGuideDataForAuthor = getSampleGuideDataForAuthor();
 const sampleGuideDataForDlcAndPlatinum = getSampleGuideDataForDlcAndPlatinum();
 const sampleGuideDataForOrder = getSampleGuideDataForOrder();
+const sampleGuideDataForOrderMulti = getSampleGuideDataForOrderMulti();
 const sampleGuideDataForPlatform = getSampleGuideDataForPlatform();
 const sampleGuideDataForRatingsAndAttributes = getSampleGuideDataForRatingsAndAttributes();
 const sampleGuideDataForSource = getSampleGuideDataForSource();
@@ -29,13 +30,7 @@ const sampleGuideDataForText = getSampleGuideDataForText();
 const sampleGuideDataForTrophies = getSampleGuideDataForTrophies();
 const sampleGuideDataForType = getSampleGuideDataForTypeAndAttributes();
 
-// TODO order by multiple fields, e.g. hardest game that is the shortest -- order:-difficulty,hours
-
 // TODO platinum rate, completion rate (when data is available)
-
-// TODO exclusive searches -- use + to say "all these must be there"
-//      - platform:+psv (no need to -ps3,-ps4)
-//      - author:+langdon (guides I solo authored)
 
 function genericTest(_: string, search: string, data: Record<string, Guide>, expectedTitles: string[]) {
     const guides = filter(data, search);
@@ -77,7 +72,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Quotations', 'Onimusha 2: Samurai’s Destiny Trophy', sampleGuideDataForText, ['Onimusha 2: Samurai\'s Destiny Trophy Guide', 'Onimusha 2: Samurai’s Destiny Trophy Guide & Roadmap']],
         ['Quotations Reverse', 'Onimusha 2 Samurais', sampleGuideDataForText, ['Onimusha 2: Samurai\'s Destiny Trophy Guide', 'Onimusha 2: Samurai’s Destiny Trophy Guide & Roadmap']],
     ];
-    describe.only('Basic Search', () => test.each(textScenarios)('%s - `%s`', genericTest));
+    describe('Basic Search', () => test.each(textScenarios)('%s - `%s`', genericTest));
 
     // author:
     const authorScenarios = [
@@ -88,6 +83,10 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Multiple (Out Of Order)', 'author:Michael2399,langdon', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
         ['Multiple (Partial)', 'author:ichael239,angdo', sampleGuideDataForAuthor, ['Pato Box Trophy Guide']],
         ['Multiple (Mismatched)', 'author:HealedFiend13,Michael2399', sampleGuideDataForAuthor, []],
+        ['Exclusions', 'author:-langdon', sampleGuideDataForAuthor, ['Mortal Kombat Trophy Guide', 'PSNProfiles: Leaderboard Rules & Disputes']],
+        ['Exclusives (Single)', 'author:+langdon', sampleGuideDataForAuthor, ['ScourgeBringer Trophy Guide']],
+        ['Exclusives (Multiple)', 'author:+langdon,+HealedFiend13', sampleGuideDataForAuthor, ['Witchcrafty Trophy Guide']],
+        ['Non-Exclusives', 'author:langdon,HealedFiend13', sampleGuideDataForAuthor, ['Witchcrafty Trophy Guide', 'Fake Guide']],
     ];
     describe('Author Search', () => test.each(authorScenarios)('%s - `%s`', genericTest));
 
@@ -104,8 +103,10 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Equals', 'difficulty:3', getSampleGuideDataForRatingsAndAttributes(0), ['Rating 3']],
         ['Greater Than', 'difficulty:>8', getSampleGuideDataForRatingsAndAttributes(0), ['Rating 9', 'Rating 10']],
         ['Less Than', 'difficulty:<3', getSampleGuideDataForRatingsAndAttributes(0), ['Rating 1', 'Rating 2']],
+        ['Range', 'difficulty:4-6', getSampleGuideDataForRatingsWithDecimals(), ['4.9', '5.9', '6.9']],
         ['Empty', 'difficulty:', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
         ['Garbage', 'difficulty:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
+
     ];
     describe('Difficulty Search', () => test.each(difficultyScenarios)('%s - `%s`', genericTest));
 
@@ -122,6 +123,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Equals', 'hours:1', getSampleGuideDataForRatingsAndAttributes(2), ['Rating 1']],
         ['Greater Than', 'hours:>9', getSampleGuideDataForRatingsAndAttributes(2), ['Rating 10']],
         ['Less Than', 'hours:<2', getSampleGuideDataForRatingsAndAttributes(2), ['Rating 1']],
+        ['Range', 'hours:4-6', getSampleGuideDataForRatingsWithDecimals(), ['4.9', '5.9', '6.9']],
         ['Empty', 'hours:', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
         ['Garbage', 'hours:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
     ];
@@ -159,6 +161,9 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Hours (Reverse)', 'order:-hours', sampleGuideDataForOrder, ratingMissing],
         ['Published', 'order:published', sampleGuideDataForOrder, ascending],
         ['Published (Reverse)', 'order:-published', sampleGuideDataForOrder, descending],
+        ['Multiple #1', 'order:-difficulty,hours', sampleGuideDataForOrderMulti, ['B Hard/Short', 'A Hard/Long', 'D Easy/Short', 'C Easy/Long']],
+        ['Multiple #2', 'order:playthroughs,difficulty,-title', sampleGuideDataForOrderMulti, ['D Easy/Short', 'C Easy/Long', 'B Hard/Short', 'A Hard/Long',]],
+        ['Multiple #3 (Fallback when all values are same)', 'order:playthroughs', sampleGuideDataForOrderMulti, ['A Hard/Long', 'B Hard/Short', 'C Easy/Long', 'D Easy/Short']],
     ];
     describe('Order Search', () => test.each(orderScenarios)('%s - `%s`', genericTest));
 
@@ -174,6 +179,11 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Multiple (Some)', 'platform:psv,ps3', sampleGuideDataForPlatform, ['Ratchet & Clank: Full Frontal Assault Trophy Guide', 'Rogue Legacy Trophy Guide']],
         ['Exclusions (Single)', 'platform:psv,-ps3', sampleGuideDataForPlatform, ['Pato Box Trophy Guide']],
         ['Exclusions (Multiple)', 'platform:psv,-ps3,-ps4', sampleGuideDataForPlatform, ['Pato Box Trophy Guide']],
+        ['Exclusives (Single #1)', 'platform:+psv', sampleGuideDataForPlatform, ['Pato Box Trophy Guide']],
+        ['Exclusives (Single #2)', 'platform:+vita', sampleGuideDataForPlatform, ['Pato Box Trophy Guide']],
+        ['Exclusives (Single #3)', 'platform:+ps5', sampleGuideDataForPlatform, ['Witchcrafty Trophy Guide']],
+        ['Exclusives (Multiple #1)', 'platform:+ps3,+vita', sampleGuideDataForPlatform, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
+        ['Exclusives (Multiple #2)', 'platform:+ps3,+psv', sampleGuideDataForPlatform, ['Ratchet & Clank: Full Frontal Assault Trophy Guide']],
     ];
     describe('Platform Search', () => test.each(platformScenarios)('%s - `%s`', genericTest));
 
@@ -190,6 +200,7 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Equals', 'playthroughs:10', getSampleGuideDataForRatingsAndAttributes(1), ['Rating 10']],
         ['Greater Than', 'playthroughs:>7', getSampleGuideDataForRatingsAndAttributes(1), ['Rating 8', 'Rating 9', 'Rating 10']],
         ['Less Than', 'playthroughs:<4', getSampleGuideDataForRatingsAndAttributes(1), ['Rating 1', 'Rating 2', 'Rating 3']],
+        ['Range', 'playthroughs:4-6', getSampleGuideDataForRatingsWithDecimals(), ['4.9', '5.9', '6.9']],
         ['Empty', 'playthroughs:', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
         ['Garbage', 'playthroughs:garbage', sampleGuideDataForRatingsAndAttributes, ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5', 'Rating 6', 'Rating 7', 'Rating 8', 'Rating 9', 'Rating 10']],
     ];
@@ -202,6 +213,8 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['PlaystationTrophies', 'src:pst', sampleGuideDataForSource, ['Super Stardust Ultra Trophy Guide']],
         ['Powerpyx', 'src:powerpyx', sampleGuideDataForSource, ['Nobody Wants To Die Trophy Guide & Roadmap']],
         ['PSNProfiles', 'src:psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
+        ['Exclusions', 'src:-platget,-knoef', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide', 'Nobody Wants To Die Trophy Guide & Roadmap', 'Super Stardust Ultra Trophy Guide']],
+        ['Exclusives (non-sensical, just make sure it works', 'src:+psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
     ];
     describe('Source Search', () => test.each(sourceScenarios)('%s - `%s`', genericTest));
 
@@ -226,36 +239,40 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
 
 function getSampleGuideDataForAuthor(): Record<string, Guide> {
     return {
-        '1': {
+        '7363': {
             a: 0,
-            u: [],
+            u: ['Sergen-The-Boss'],
             d: 0,
             r: [],
-            n: 'PSNProfiles: Writing a Guide',
+            n: 'Mortal Kombat Trophy Guide',
         },
-        '132': {
-            a: PLATFORM_PS3 | PLATFORM_VITA | IS_TROPHY_GUIDE,
-            u: [],
+        '14637': {
+            a: 0,
+            u: ['langdon'],
             d: 0,
             r: [],
-            n: 'Ratchet & Clank: Full Frontal Assault Trophy Guide',
-            t: [1, 7, 7, 8],
+            n: 'ScourgeBringer Trophy Guide',
         },
         '15002': {
-            a: PLATFORM_VITA | IS_TROPHY_GUIDE,
+            a: 0,
             u: ['langdon', 'Michael2399'],
             d: 0,
             r: [],
             n: 'Pato Box Trophy Guide',
-            t: [1, 2, 7, 42],
         },
         '16557': {
-            a: PLATFORM_PS5 | HAS_MISSABLE_TROPHIES | IS_TROPHY_GUIDE,
+            a: 0,
             u: ['HealedFiend13', 'langdon'],
             d: 0,
             r: [],
             n: 'Witchcrafty Trophy Guide',
-            t: [1, 7, 6, 16],
+        },
+        '16558': {
+            a: 0,
+            u: ['HealedFiend13', 'langdon', 'Somebody Else'],
+            d: 0,
+            r: [],
+            n: 'Fake Guide',
         },
         '18277': {
             a: 0,
@@ -263,22 +280,6 @@ function getSampleGuideDataForAuthor(): Record<string, Guide> {
             d: 0,
             r: [],
             n: 'PSNProfiles: Leaderboard Rules & Disputes',
-        },
-        '19678': {
-            a: PLATFORM_PS3 | PLATFORM_PS4 | PLATFORM_VITA | IS_TROPHY_GUIDE,
-            u: [],
-            d: 0,
-            r: [],
-            n: 'Rogue Legacy Trophy Guide',
-            t: [1, 6, 11, 12],
-        },
-        'fuck/knows': {
-            a: 0,
-            u: [],
-            d: 0,
-            r: [],
-            n: 'Doom The Dark Ages Inc',
-            t: [1, 6, 11, 0],
         },
     };
 }
@@ -330,6 +331,39 @@ function getSampleGuideDataForOrder(): Record<string, Guide> {
         }, {});
 
     return guides;
+}
+
+function getSampleGuideDataForOrderMulti(): Record<string, Guide> {
+    return {
+        '1': {
+            a: 0,
+            u: [],
+            d: 4,
+            r: [10, 1, 999],
+            n: 'A Hard/Long',
+        },
+        '2': {
+            a: 0,
+            u: [],
+            d: 3,
+            r: [10, 1, 2],
+            n: 'B Hard/Short',
+        },
+        '3': {
+            a: 0,
+            u: [],
+            d: 2,
+            r: [1, 1, 999],
+            n: 'C Easy/Long',
+        },
+        '4': {
+            a: 0,
+            u: [],
+            d: 1,
+            r: [1, 1, 2],
+            n: 'D Easy/Short',
+        },
+    };
 }
 
 function getSampleGuideDataForPlatform(): Record<string, Guide> {
@@ -387,6 +421,46 @@ function getSampleGuideDataForPlatform(): Record<string, Guide> {
             r: [],
             n: 'Doom The Dark Ages Inc',
             t: [1, 6, 11, 0],
+        },
+    };
+}
+
+function getSampleGuideDataForRatingsWithDecimals(): Record<string, Guide> {
+    return {
+        '1': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [3.9, 3.9, 3.9],
+            n: '3.9',
+        },
+        '2': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [4.9, 4.9, 4.9],
+            n: '4.9',
+        },
+        '3': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [5.9, 5.9, 5.9],
+            n: '5.9',
+        },
+        '4': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [6.9, 6.9, 6.9],
+            n: '6.9',
+        },
+        '5': {
+            a: 0,
+            u: [],
+            d: 0,
+            r: [7.9, 7.9, 7.9],
+            n: '7.9',
         },
     };
 }

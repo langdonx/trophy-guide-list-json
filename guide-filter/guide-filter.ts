@@ -38,8 +38,20 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
     ]);
 
     // parse order details
-    const orderBy = tokens.order?.replace('-', '').toLowerCase() ?? 'published';
-    const reverse = tokens.order?.startsWith('-') ?? true;
+    const orderFields = !tokens.order
+        ? []
+        : tokens.order.split(',').map(field => {
+            const reverse = field.startsWith('-');
+            const property = field.replace('-', '').toLowerCase();
+            return { property, reverse };
+        });
+
+    // if no order fields are specified, default to showing newest first
+    orderFields.push({ property: 'published', reverse: true });
+
+    // remove duplicates while preserving order
+    const uniqueOrderFields = orderFields
+        .filter((field, index, arr) => arr.findIndex(f => f.property === field.property) === index);
 
     const punctuationRegex = /[-:,.’'"“”]/g;
 
@@ -47,8 +59,6 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
         .replace(punctuationRegex, '')
         .replace(/  /g, ' ')
         .trim();
-
-    console.log('cleanedUpTerms', cleanedUpTerms);
 
     const result = Object.entries(guides)
         .filter(([_, g]) => {
@@ -105,34 +115,83 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
 
             // author token
             if (tokens['author']) {
-                const authors = tokens['author'].split(',');
+                const guideAuthors = g.u.map(author => author.toLowerCase());
 
-                // if they provided a list, they all need to match (every instead of some)
-                if (authors.every((a: string) => g.u.some(b => b.toLowerCase().includes(a.toLowerCase()))) === false) {
-                    return false;
+                const mustHaveExclusive = tokens['author']
+                    .split(',')
+                    .filter((a: string) => a.startsWith('+'))
+                    .map((a: string) => a.substring(1).toLowerCase());
+
+
+                if (mustHaveExclusive.length > 0) {
+                    // For exclusive, the guide must have exactly these authors and no others
+                    const hasAllExclusive = mustHaveExclusive.every((a: string) => guideAuthors.some(b => b.includes(a)));
+                    const hasOnlyExclusive = guideAuthors.every(author => mustHaveExclusive.some(a => author.includes(a)));
+
+                    if (!hasAllExclusive || !hasOnlyExclusive) {
+                        return false;
+                    }
+                }
+                else {
+                    const mustHave = tokens['author']
+                        .split(',')
+                        .filter((a: string) => !a.startsWith('-') && !a.startsWith('+'))
+                        .map((a: string) => a.toLowerCase());
+
+                    const cannotHave = tokens['author']
+                        .split(',')
+                        .filter((a: string) => a.startsWith('-'))
+                        .map((a: string) => a.substring(1).toLowerCase());
+
+                    if (mustHave.length > 0 && mustHave.every((a: string) => guideAuthors.some(b => b.includes(a))) === false) {
+                        return false;
+                    }
+
+                    if (cannotHave.length > 0 && cannotHave.some((a: string) => guideAuthors.some(b => b.includes(a))) === true) {
+                        return false;
+                    }
                 }
             }
 
             // platform token
             if (tokens['platform']) {
-                const mustHave = tokens['platform']
-                    .split(',')
-                    .filter((p: string) => p.startsWith('-') === false)
-                    .map((p: string) => (p === 'psv' ? 'vita' : p).toLowerCase());
-
-                const cannotHave = tokens['platform']
-                    .split(',')
-                    .filter((p: string) => p.startsWith('-') === true)
-                    .map((p: string) => (p === '-psv' ? '-vita' : p).substring(1).toLowerCase());
-
                 const guidePlatforms = buildPlatformList(g);
 
-                if (mustHave.every((p: string) => guidePlatforms.some(b => b == p)) === false) {
-                    return false;
-                }
+                const mustHaveExclusive = tokens['platform']
+                    .split(',')
+                    .filter((p: string) => p.startsWith('+'))
+                    .map((p: string) => {
+                        const platform = p.substring(1);
+                        return (platform === 'psv' ? 'vita' : platform).toLowerCase();
+                    });
 
-                if (cannotHave.length > 0 && cannotHave.some((p: string) => guidePlatforms.includes(p)) === true) {
-                    return false;
+                if (mustHaveExclusive.length > 0) {
+                    // For exclusive, the guide must have exactly these platforms and no others
+                    const hasAllExclusive = mustHaveExclusive.every((p: string) => guidePlatforms.includes(p));
+                    const hasOnlyExclusive = guidePlatforms.every(platform => mustHaveExclusive.includes(platform));
+
+                    if (!hasAllExclusive || !hasOnlyExclusive || guidePlatforms.length !== mustHaveExclusive.length) {
+                        return false;
+                    }
+                }
+                else {
+                    const mustHave = tokens['platform']
+                        .split(',')
+                        .filter((p: string) => !p.startsWith('-') && !p.startsWith('+'))
+                        .map((p: string) => (p === 'psv' ? 'vita' : p).toLowerCase());
+
+                    const cannotHave = tokens['platform']
+                        .split(',')
+                        .filter((p: string) => p.startsWith('-'))
+                        .map((p: string) => (p === '-psv' ? '-vita' : p).substring(1).toLowerCase());
+
+                    if (mustHave.length > 0 && mustHave.every((p: string) => guidePlatforms.some(b => b == p)) === false) {
+                        return false;
+                    }
+
+                    if (cannotHave.length > 0 && cannotHave.some((p: string) => guidePlatforms.includes(p)) === true) {
+                        return false;
+                    }
                 }
             }
 
@@ -151,23 +210,26 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
 
             // src token
             if (tokens['src']) {
-                if (tokens['src'].toLowerCase() === 'knoef' && (g.a & SOURCE_KNOEF) === 0) {
+                // it's nonsensical to have exclusive sources, so just in case someone tries, just ignore the + character
+                const source = tokens['src'].replace(/\+/g, '');
+
+                const mustHave = source
+                    .split(',')
+                    .filter((s: string) => s.startsWith('-') === false)
+                    .map((s: string) => s.toLowerCase());
+
+                const cannotHave = source
+                    .split(',')
+                    .filter((s: string) => s.startsWith('-') === true)
+                    .map((s: string) => s.substring(1).toLowerCase());
+
+                const guideSources = buildSourceList(g);
+
+                if (mustHave.length > 0 && mustHave.every((s: string) => guideSources.some(b => b == s)) === false) {
                     return false;
                 }
 
-                if (tokens['src'].toLowerCase() === 'platget' && (g.a & SOURCE_PLATGET) === 0) {
-                    return false;
-                }
-
-                if (tokens['src'].toLowerCase() === 'powerpyx' && (g.a & SOURCE_POWERPYX) === 0) {
-                    return false;
-                }
-
-                if (tokens['src'].toLowerCase() === 'pst' && (g.a & SOURCE_PLAYSTATIONTROPHIES) === 0) {
-                    return false;
-                }
-
-                if (tokens['src'].toLowerCase() === 'psnp' && (g.a & SOURCE_PSNP) === 0) {
+                if (cannotHave.length > 0 && cannotHave.some((s: string) => guideSources.includes(s)) === true) {
                     return false;
                 }
             }
@@ -185,35 +247,14 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
 
             // trophies token
             if (tokens['trophies']) {
-                const tokenValue = tokens['trophies'];
-                const desiredTrophyCount = Number(tokenValue.replace(/<|>/, ''));
-                const guideTrophyCount = g.t ? g.t.reduce((p, c) => p + c, 0) : 0;
-
                 if (!g.t) {
                     // if the guide doesn't even have trophies, don't include it
                     return false;
                 }
 
-                if (tokenValue.startsWith('>')) {
-                    // if trophy count starts with ">" find guides with a higher count
-                    if (guideTrophyCount <= desiredTrophyCount) {
-                        return false;
-                    }
+                if (!compareTrophyCountForFiltering(tokens['trophies'], g)) {
+                    return false;
                 }
-                else if (tokenValue.startsWith('<')) {
-                    // if trophy count starts with "<" find guides with a lower count
-                    if (guideTrophyCount >= desiredTrophyCount) {
-                        return false;
-                    }
-                }
-                else if (!isNaN(desiredTrophyCount)) {
-                    // if trophy count is a number, find perfect matches
-                    if (guideTrophyCount !== desiredTrophyCount) {
-                        return false;
-                    }
-                }
-
-                return true;
             }
 
             // no reason for it not to be a match? return it
@@ -223,23 +264,40 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
             const [_, rowA] = tupleA;
             const [__, rowB] = tupleB;
 
-            const { a, b } = reverse ? { a: rowB, b: rowA } : { a: rowA, b: rowB };
+            // iterate through each sort field until we find a non-zero comparison
+            for (const { property, reverse } of uniqueOrderFields) {
+                const { a, b } = reverse ? { a: rowB, b: rowA } : { a: rowA, b: rowB };
+                let comparison = 0;
 
-            switch (orderBy) {
-                case 'title':
-                    return a.n.localeCompare(b.n);
-                case 'difficulty':
-                    return compareRatingForSorting(0, a, b, reverse ? 0 : 9999);
-                case 'playthroughs':
-                    return compareRatingForSorting(1, a, b, reverse ? 0 : 9999);
-                case 'hours':
-                    return compareRatingForSorting(2, a, b, reverse ? 0 : 9999);
-                case 'published':
-                    return a.d - b.d;
-                default:
-                    // default order is just how the guide is in there... maybe default to published?
-                    return 1;
+                switch (property) {
+                    case 'title':
+                        comparison = a.n.localeCompare(b.n);
+                        break;
+                    case 'difficulty':
+                        comparison = compareRatingForSorting(0, a, b, reverse ? 0 : 9999);
+                        break;
+                    case 'playthroughs':
+                        comparison = compareRatingForSorting(1, a, b, reverse ? 0 : 9999);
+                        break;
+                    case 'hours':
+                        comparison = compareRatingForSorting(2, a, b, reverse ? 0 : 9999);
+                        break;
+                    case 'published':
+                        comparison = a.d - b.d;
+                        break;
+                    default:
+                        // unknown field, skip
+                        continue;
+                }
+
+                // if this field produces a non-zero comparison, use it
+                if (comparison !== 0) {
+                    return comparison;
+                }
             }
+
+            // all fields were equal, maintain original order
+            return 0;
         })
         .map(([id, guide]) => ({
             id,
@@ -275,7 +333,45 @@ function buildPlatformList(guide: Guide) {
 }
 
 // TODO its own file? its own tests?
+function buildSourceList(guide: Guide) {
+    let sources = [];
+    if (guide.a & SOURCE_PSNP) {
+        sources.push('psnp');
+    }
+    if (guide.a & SOURCE_KNOEF) {
+        sources.push('knoef');
+    }
+    if (guide.a & SOURCE_PLATGET) {
+        sources.push('platget');
+    }
+    if (guide.a & SOURCE_PLAYSTATIONTROPHIES) {
+        sources.push('pst');
+    }
+    if (guide.a & SOURCE_POWERPYX) {
+        sources.push('powerpyx');
+    }
+    return sources;
+}
+
+// TODO its own file? its own tests?
 function compareRatingForFiltering(index: number, tokenValue: string, guide: Guide) {
+    // check for range pattern (e.g., "4-6")
+    if (tokenValue.includes('-') && !tokenValue.startsWith('<') && !tokenValue.startsWith('>')) {
+        const [minStr, maxStr] = tokenValue.split('-');
+        const minValue = Number(minStr);
+        const maxValue = Number(maxStr);
+
+        if (!isNaN(minValue) && !isNaN(maxValue)) {
+            const guideValue = guide.r && guide.r[index] ? guide.r[index] : 0;
+            // inclusive range: >= min and < (max + 1)
+            if (guideValue >= minValue && guideValue < maxValue + 1) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     const difficultyNumber = Number(tokenValue.replace(/<|>/, ''));
 
     if (tokenValue.startsWith('>')) {
@@ -293,6 +389,50 @@ function compareRatingForFiltering(index: number, tokenValue: string, guide: Gui
     else if (!isNaN(difficultyNumber)) {
         // if difficulty is a number, find perfect matches
         if (guide.r[index] !== difficultyNumber) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// TODO its own file? its own tests?
+function compareTrophyCountForFiltering(tokenValue: string, guide: Guide) {
+    const guideTrophyCount = guide.t ? guide.t.reduce((p, c) => p + c, 0) : 0;
+
+    // check for range pattern (e.g., "20-50")
+    if (tokenValue.includes('-') && !tokenValue.startsWith('<') && !tokenValue.startsWith('>')) {
+        const [minStr, maxStr] = tokenValue.split('-');
+        const minValue = Number(minStr);
+        const maxValue = Number(maxStr);
+
+        if (!isNaN(minValue) && !isNaN(maxValue)) {
+            // inclusive range: >= min and <= max
+            if (guideTrophyCount >= minValue && guideTrophyCount <= maxValue) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    const desiredTrophyCount = Number(tokenValue.replace(/<|>/, ''));
+
+    if (tokenValue.startsWith('>')) {
+        // if trophy count starts with ">" find guides with a higher count
+        if (guideTrophyCount <= desiredTrophyCount) {
+            return false;
+        }
+    }
+    else if (tokenValue.startsWith('<')) {
+        // if trophy count starts with "<" find guides with a lower count
+        if (guideTrophyCount >= desiredTrophyCount) {
+            return false;
+        }
+    }
+    else if (!isNaN(desiredTrophyCount)) {
+        // if trophy count is a number, find perfect matches
+        if (guideTrophyCount !== desiredTrophyCount) {
             return false;
         }
     }
