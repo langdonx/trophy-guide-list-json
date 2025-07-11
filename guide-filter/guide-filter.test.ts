@@ -213,8 +213,9 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['PlaystationTrophies', 'src:pst', sampleGuideDataForSource, ['Super Stardust Ultra Trophy Guide']],
         ['Powerpyx', 'src:powerpyx', sampleGuideDataForSource, ['Nobody Wants To Die Trophy Guide & Roadmap']],
         ['PSNProfiles', 'src:psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
+        ['Multiple', 'src:platget,knoef', sampleGuideDataForSource, ['Synthetic Lover Trophy Guide', 'Astro Bot Trophy Guide']],
         ['Exclusions', 'src:-platget,-knoef', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide', 'Nobody Wants To Die Trophy Guide & Roadmap', 'Super Stardust Ultra Trophy Guide']],
-        ['Exclusives (non-sensical, just make sure it works', 'src:+psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
+        ['Exclusives (non-sensical, just make sure it works)', 'src:+psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
     ];
     describe('Source Search', () => test.each(sourceScenarios)('%s - `%s`', genericTest));
 
