@@ -225,7 +225,7 @@ export function filter(guides: Record<string, Guide>, searchText: string): (Guid
 
                 const guideSources = buildSourceList(g);
 
-                if (mustHave.length > 0 && mustHave.every((s: string) => guideSources.some(b => b == s)) === false) {
+                if (mustHave.length > 0 && mustHave.some((s: string) => guideSources.some(b => b == s)) === false) {
                     return false;
                 }
 
