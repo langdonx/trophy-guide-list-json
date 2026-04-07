@@ -1,4 +1,9 @@
-body {}
+body {
+}
+
+body.init {
+  display: none;
+}
 
 main {
   height: 100vh;

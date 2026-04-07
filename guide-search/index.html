@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="index.css">
 </head>
 
-<body>
+<body class="init">
     <div id="app">
         <main @click="onAppClick()" class="d-flex flex-column p-3">
 
@@ -100,6 +100,7 @@
                                             • {{ guide.trophyPoints.toLocaleString() }} Points
                                             <span v-if="guide.isOnline || guide.isBuggy">
                                                 •
+                                                <span v-if="guide.hasMissable" class="tag missable">MISSABLE</span>
                                                 <span v-if="guide.isOnline" class="tag online">ONLINE</span>
                                                 <span v-if="guide.isBuggy" class="tag buggy">BUGGY</span>
                                             </span>
@@ -155,6 +156,6 @@
 </body>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="index.js"></script>
+<script src="index.js" type="module"></script>
 
 </html>
