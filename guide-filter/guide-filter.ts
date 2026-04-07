@@ -5,6 +5,7 @@ import {
     SOURCE_PLATGET,
     SOURCE_PLAYSTATIONTROPHIES,
     SOURCE_POWERPYX,
+    SOURCE_VIDEOGAMELIZARD,
     IS_TROPHY_GUIDE,
     IS_DLC,
     PLATFORM_PC,
@@ -16,8 +17,9 @@ import {
     HAS_BUGGY_TROPHIES,
     HAS_ONLINE_TROPHIES,
     HAS_MISSABLE_TROPHIES,
-} from '../types/attributes-v2';
-import { tokenParser } from './token-parser';
+} from '../types/attributes-v2.ts';
+import { tokenParser } from './token-parser.ts';
+export { tokenParser };
 
 export function filter(guides: Record<string, Guide>, searchText: string): (Guide & { id: string })[] {
     const tokens = new tokenParser().parse(searchText, [
@@ -340,6 +342,9 @@ function buildSourceList(guide: Guide) {
     }
     if (guide.a & SOURCE_KNOEF) {
         sources.push('knoef');
+    }
+    if (guide.a & SOURCE_VIDEOGAMELIZARD) {
+        sources.push('vgl');
     }
     if (guide.a & SOURCE_PLATGET) {
         sources.push('platget');
