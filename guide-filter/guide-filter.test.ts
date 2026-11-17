@@ -18,6 +18,7 @@ import {
     HAS_ONLINE_TROPHIES,
     HAS_MISSABLE_TROPHIES,
     SOURCE_VIDEOGAMELIZARD,
+    SOURCE_TROPHYTOM,
 } from '../types/attributes-v2';
 
 const sampleGuideDataForAuthor = getSampleGuideDataForAuthor();
@@ -217,8 +218,9 @@ function genericTest(_: string, search: string, data: Record<string, Guide>, exp
         ['Powerpyx', 'src:powerpyx', sampleGuideDataForSource, ['Nobody Wants To Die Trophy Guide & Roadmap']],
         ['PSNProfiles', 'src:psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
         ['VideoGameLizard', 'src:vgl', sampleGuideDataForSource, ['MIO: Memories in Orbit']],
+        ['TrophyTom', 'src:tom', sampleGuideDataForSource, ['Mixtape – Trophy Guide']],
         ['Multiple', 'src:platget,knoef', sampleGuideDataForSource, ['Synthetic Lover Trophy Guide', 'Astro Bot Trophy Guide']],
-        ['Exclusions', 'src:-platget,-knoef', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide', 'Nobody Wants To Die Trophy Guide & Roadmap', 'MIO: Memories in Orbit', 'Super Stardust Ultra Trophy Guide']],
+        ['Exclusions', 'src:-platget,-knoef', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide', 'Nobody Wants To Die Trophy Guide & Roadmap', 'MIO: Memories in Orbit', 'Mixtape – Trophy Guide', 'Super Stardust Ultra Trophy Guide']],
         ['Exclusives (non-sensical, just make sure it works)', 'src:+psnp', sampleGuideDataForSource, ['PSNProfiles: Writing a Guide']],
         ['Garbage', 'src:fuku', sampleGuideDataForSource, []],
     ];
@@ -572,6 +574,14 @@ function getSampleGuideDataForSource(): Record<string, Guide> {
             g: [],
             r: [],
             n: 'MIO: Memories in Orbit',
+        },
+        'trophy-tom/mixtape-trophy-guide/': {
+            a: SOURCE_TROPHYTOM,
+            u: [],
+            d: 0,
+            g: [],
+            r: [],
+            n: 'Mixtape – Trophy Guide',
         },
         'astro-bot-trophy-guide/': {
             a: SOURCE_PLATGET,
