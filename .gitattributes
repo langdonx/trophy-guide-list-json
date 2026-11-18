@@ -1,0 +1,11 @@
+# Store text files with LF line endings and check them out as LF on every OS,
+# so editors/tools with different defaults can't turn a small edit into a whole-file diff.
+* text=auto eol=lf
+
+# Binary files: never touch line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
