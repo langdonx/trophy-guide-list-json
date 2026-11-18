@@ -257,7 +257,7 @@ function initVueApp() {
             // When .a & SOURCE_PLAYSTATIONTROPHIES, the URL is https://www.playstationtrophies.org/game/${path}
             // When .a & SOURCE_POWERPYX, the URL is https://powerpyx.com/${path}
             // When .a & SOURCE_VIDEOGAMELIZARD, the URL is https://videogamelizard.com/${path}
-            // When .a & SOURCE_TROPHYTOM, the URL is https://www.trophy-tom.com/${path} (ids are prefixed with "trophy-tom/" to avoid colliding with old powerpyx ids)
+            // When .a & SOURCE_TROPHYTOM, the URL is https://www.trophy-tom.com/${path} (ids are prefixed with "trophy-tom/" to avoid colliding with platget ids)
             const url = (guide.a & SOURCE_KNOEF) ? `https://knoef.info/${guide.id}`
               : (guide.a & SOURCE_PLATGET) ? `https://www.platget.com/${guide.id}`
                 : (guide.a & SOURCE_POWERPYX) ? `https://powerpyx.com/${guide.id}`
