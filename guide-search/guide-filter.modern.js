@@ -5,6 +5,7 @@ var SOURCE_PLATGET = 1 << 2;
 var SOURCE_PLAYSTATIONTROPHIES = 1 << 3;
 var SOURCE_POWERPYX = 1 << 4;
 var SOURCE_VIDEOGAMELIZARD = 1 << 16;
+var SOURCE_TROPHYTOM = 1 << 17;
 var IS_TROPHY_GUIDE = 1 << 5;
 var IS_DLC = 1 << 6;
 var PLATFORM_PS3 = 1 << 7;
@@ -331,6 +332,9 @@ function buildSourceList(guide) {
   }
   if (guide.a & SOURCE_POWERPYX) {
     sources.push("powerpyx");
+  }
+  if (guide.a & SOURCE_TROPHYTOM) {
+    sources.push("tom");
   }
   return sources;
 }

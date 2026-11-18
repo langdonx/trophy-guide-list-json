@@ -4,6 +4,7 @@ export const SOURCE_PLATGET = 1 << 2;
 export const SOURCE_PLAYSTATIONTROPHIES = 1 << 3;
 export const SOURCE_POWERPYX = 1 << 4;
 export const SOURCE_VIDEOGAMELIZARD = 1 << 16;
+export const SOURCE_TROPHYTOM = 1 << 17;
 
 export const IS_TROPHY_GUIDE = 1 << 5;
 export const IS_DLC = 1 << 6;

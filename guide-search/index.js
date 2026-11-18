@@ -8,6 +8,7 @@ var SOURCE_PLATGET = 1 << 2;
 var SOURCE_PLAYSTATIONTROPHIES = 1 << 3;
 var SOURCE_POWERPYX = 1 << 4;
 var SOURCE_VIDEOGAMELIZARD = 1 << 16;
+var SOURCE_TROPHYTOM = 1 << 17;
 var IS_TROPHY_GUIDE = 1 << 5;
 var IS_DLC = 1 << 6;
 var PLATFORM_PS3 = 1 << 7;
@@ -70,6 +71,10 @@ function initVueApp() {
         {
           searchText: 'src:pst',
           title: 'PST.org'
+        },
+        {
+          searchText: 'src:tom',
+          title: 'Trophy Tom'
         },
         {
           searchText: 'src:vgl',
@@ -251,12 +256,14 @@ function initVueApp() {
             // When .a & SOURCE_PLATGET, the URL is https://www.platget.com/${path}
             // When .a & SOURCE_PLAYSTATIONTROPHIES, the URL is https://www.playstationtrophies.org/game/${path}
             // When .a & SOURCE_POWERPYX, the URL is https://powerpyx.com/${path}
-            // When .a & SOURCE_VIDEOGAMELIZARD, the URL is https://powerpyx.com/${path}
+            // When .a & SOURCE_VIDEOGAMELIZARD, the URL is https://videogamelizard.com/${path}
+            // When .a & SOURCE_TROPHYTOM, the URL is https://www.trophy-tom.com/${path} (ids are prefixed with "trophy-tom/" to avoid colliding with platget ids)
             const url = (guide.a & SOURCE_KNOEF) ? `https://knoef.info/${guide.id}`
               : (guide.a & SOURCE_PLATGET) ? `https://www.platget.com/${guide.id}`
                 : (guide.a & SOURCE_POWERPYX) ? `https://powerpyx.com/${guide.id}`
                   : (guide.a & SOURCE_PLAYSTATIONTROPHIES) ? `https://www.playstationtrophies.org/game/${guide.id}`
                     : (guide.a & SOURCE_VIDEOGAMELIZARD) ? `https://videogamelizard.com/${guide.id}`
+                      : (guide.a & SOURCE_TROPHYTOM) ? `https://www.trophy-tom.com/${guide.id.replace(/^trophy-tom\//, '')}`
                       : `https://psnprofiles.com/guide/${guide.id}`;
 
             const result = {

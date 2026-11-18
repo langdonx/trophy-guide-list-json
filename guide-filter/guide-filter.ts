@@ -6,6 +6,7 @@ import {
     SOURCE_PLAYSTATIONTROPHIES,
     SOURCE_POWERPYX,
     SOURCE_VIDEOGAMELIZARD,
+    SOURCE_TROPHYTOM,
     IS_TROPHY_GUIDE,
     IS_DLC,
     PLATFORM_PC,
@@ -354,6 +355,9 @@ function buildSourceList(guide: Guide) {
     }
     if (guide.a & SOURCE_POWERPYX) {
         sources.push('powerpyx');
+    }
+    if (guide.a & SOURCE_TROPHYTOM) {
+        sources.push('tom');
     }
     return sources;
 }
